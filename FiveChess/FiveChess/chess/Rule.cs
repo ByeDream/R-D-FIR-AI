@@ -18,6 +18,8 @@ namespace Chess
 
         public Rule() { }
 
+        #region winner check
+
         public bool isFullBoard(ChessBoard cb)
         {
             bool isFull = true;
@@ -212,5 +214,7 @@ namespace Chess
             }
             return count;
         }
+
+        #endregion
     }
 }

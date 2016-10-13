@@ -75,8 +75,7 @@ namespace FiveChess
 
             if(row != -1 && col != -1)
             {
-                chessMan.chessboard.setData(row, col, ChessBoard.CHESS_WHITE);
-                chessMan.rule.checkWinner(chessMan.chessboard, row, col);
+                chessMan.PlayChess(row, col);
             }
 
             this.Refresh();

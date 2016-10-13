@@ -53,6 +53,7 @@
     </Compile>
     <Compile Include="chess\ChessManager.cs" />
     <Compile Include="chess\Logs.cs" />
+    <Compile Include="chess\Player.cs" />
     <Compile Include="chess\Rule.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
