@@ -12,9 +12,9 @@ namespace Chess
     {
         private const int img_offset = 22;
         private const int grid_width = 35;
+        private const int chess_width = 14;
 
-
-        private const int click_offset_min = 14;
+        private const int click_offset_min = 12;
         private const int click_offset_max = 23;
 
         public UI()
@@ -31,11 +31,11 @@ namespace Chess
                 {
                     if( ChessBoard.CHESS_WHITE == _chb.Data[row][col] )
                     {
-                        g.DrawImage(white_chess, new Point(col * grid_width + img_offset - click_offset_min, row * grid_width + img_offset - click_offset_min));
+                        g.DrawImage(white_chess, new Point(col * grid_width + img_offset - chess_width, row * grid_width + img_offset - chess_width));
                     }
                     else if(ChessBoard.CHESS_BLACK == _chb.Data[row][col] )
                     {
-                        g.DrawImage(black_chess, new Point(col * grid_width + img_offset - click_offset_min, row * grid_width + img_offset - click_offset_min));
+                        g.DrawImage(black_chess, new Point(col * grid_width + img_offset - chess_width, row * grid_width + img_offset - chess_width));
                     }
                 }
             }
