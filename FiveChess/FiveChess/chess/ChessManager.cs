@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.Drawing;
+
 namespace Chess
 {
     class ChessManager
@@ -13,10 +15,11 @@ namespace Chess
             _chessboard = new ChessBoard();
             _rule = new Rule();
 
-            _Hunman = new Player(PlayerType.HUNMAN, ChessBoard.CHESS_WHITE);
-            _PC = new Player(PlayerType.PC, ChessBoard.CHESS_BLACK);
-
+            _Hunman = new Player(PlayerType.HUNMAN, DEF.CHESS_WHITE);
+            _PC = new Player(PlayerType.PC, DEF.CHESS_BLACK);
             currentPlayer = _Hunman;
+
+            _droper = new Droper(_chessboard);
 
             _ui.chessboard = _chessboard;
         }
@@ -89,12 +92,28 @@ namespace Chess
 
         #endregion
 
+        #region 
+        private Droper _droper;
+        public Droper droper
+        {
+            get { return droper; }
+        }
+        
+        #endregion
+
+
+        public void drawUI(Graphics g)
+        {
+            _ui.drawChess(g);
+        }
 
         public void PlayChess(int row, int col)
         {
             byte color = CurrentPlayer.color;
 
             _chessboard.setData(row, col, color);
+
+            _droper.calCanDrop(color);
 
             rule.checkWinner(_chessboard, row, col);
 

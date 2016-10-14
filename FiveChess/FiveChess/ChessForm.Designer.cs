@@ -63,7 +63,7 @@ namespace FiveChess
 
             Graphics g = e.Graphics;
 
-            chessMan.ui.drawChess(g);
+            chessMan.drawUI(g);
         }
 
         protected override void OnMouseClick(MouseEventArgs e)

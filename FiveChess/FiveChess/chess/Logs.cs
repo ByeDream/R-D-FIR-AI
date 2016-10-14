@@ -12,10 +12,10 @@ namespace Chess
         public const int level3 = 3;
         public const int level4 = 4;
 
-        public static bool writeLog { get; set; } = true;
-        public static int level { get; set; } = level3;
+        private static bool writeLog { get; set; } = true;
+        private static int level { get; set; } = level4;
 
-        public static void writeln(string log, int level = level1)
+        public static void writeln(string log = "", int level = level1)
         {
             if(writeLog && level >= Logs.level)
             {
@@ -23,5 +23,12 @@ namespace Chess
             }
         }
 
+        public static void write(string log = "", int level = level1)
+        {
+            if (writeLog && level >= Logs.level)
+            {
+                System.Console.Write(log);
+            }
+        }
     }
 }

@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="chess\Calculator.cs" />
     <Compile Include="chess\ChessBoard.cs" />
     <Compile Include="ChessForm.cs">
       <SubType>Form</SubType>
@@ -52,6 +53,7 @@
       <DependentUpon>ChessForm.cs</DependentUpon>
     </Compile>
     <Compile Include="chess\ChessManager.cs" />
+    <Compile Include="chess\Droper.cs" />
     <Compile Include="chess\Logs.cs" />
     <Compile Include="chess\Player.cs" />
     <Compile Include="chess\Rule.cs" />
