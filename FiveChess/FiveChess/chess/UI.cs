@@ -29,11 +29,11 @@ namespace Chess
             {
                 for (int col = 0; col < _chb.Data[row].Length; col++)
                 {
-                    if(DEF.CHESS_WHITE == _chb.Data[row][col] )
+                    if(Color.WHITE == _chb.Data[row][col] )
                     {
                         g.DrawImage(white_chess, new Point(col * grid_width + img_offset - chess_width, row * grid_width + img_offset - chess_width));
                     }
-                    else if(DEF.CHESS_BLACK == _chb.Data[row][col] )
+                    else if(Color.BLACK == _chb.Data[row][col] )
                     {
                         g.DrawImage(black_chess, new Point(col * grid_width + img_offset - chess_width, row * grid_width + img_offset - chess_width));
                     }
@@ -83,9 +83,9 @@ namespace Chess
                 Logs.writeln("click_offset_max  row = " + row);
             }
 
-            if (row > DEF.MAX_ROW_ID)
+            if (row > Side.ROW_ID)
             {
-                row = DEF.MAX_ROW_ID;
+                row = Side.ROW_ID;
             }
 
             return row;
@@ -114,9 +114,9 @@ namespace Chess
                 Logs.writeln("click_offset_max  col = " + col);
             }
 
-            if (col > DEF.MAX_COL_ID)
+            if (col > Side.COL_ID)
             {
-                col = DEF.MAX_COL_ID;
+                col = Side.COL_ID;
             }
 
             return col;

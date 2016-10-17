@@ -11,19 +11,19 @@ namespace Chess
         {
             this._cb = cb;
 
-            _canDrop = new byte[DEF.ROW_LEN][];
-            _valueTable = new byte[DEF.ROW_LEN][];
-            for (int r = 0; r <= DEF.MAX_ROW_ID; r++)
+            _canDrop = new byte[Side.ROW][];
+            _valueTable = new byte[Side.ROW][];
+            for (int r = 0; r <= Side.ROW_ID; r++)
             {
-                _canDrop[r] = new byte[DEF.COL_LEN];
-                _valueTable[r] = new byte[DEF.ROW_LEN];
+                _canDrop[r] = new byte[Side.COL];
+                _valueTable[r] = new byte[Side.ROW];
             }
 
             //价值表 赋值
-            byte maxValue = DEF.MAX_COL_ID / 2;
-            for (int r = 0; r <= DEF.MAX_ROW_ID; r++)
+            byte maxValue = Side.COL_ID / 2;
+            for (int r = 0; r <= Side.ROW_ID; r++)
             {
-                for (int c = 0; c <= DEF.MAX_COL_ID; c++)
+                for (int c = 0; c <= Side.COL_ID; c++)
                 {
                     int v_row = Math.Abs(maxValue - r);
                     int v_col = Math.Abs(maxValue - c);
@@ -43,12 +43,14 @@ namespace Chess
             }
         }
 
+        #region 计算可以落子的地方
+
         public byte[][] calCanDrop(byte color)
         {
             //清空落子表
-            for (int r = 0; r <= DEF.MAX_ROW_ID; r++)
+            for (int r = 0; r <= Side.ROW_ID; r++)
             {
-                for (int c = 0; c <= DEF.MAX_COL_ID; c++)
+                for (int c = 0; c <= Side.COL_ID; c++)
                 {
                     _canDrop[r][c] = _valueTable[r][c];
                 }
@@ -56,9 +58,9 @@ namespace Chess
 
             //查看棋盘上是否有空的位置
             Logs.writeln("Can drop table:", Logs.level3);
-            for (int r = 0; r <= DEF.MAX_ROW_ID; r++)
+            for (int r = 0; r <= Side.ROW_ID; r++)
             {
-                for (int c = 0; c <= DEF.MAX_COL_ID; c++)
+                for (int c = 0; c <= Side.COL_ID; c++)
                 {
                     if(_cb.Data[r][c] != 0)
                     {
@@ -78,6 +80,8 @@ namespace Chess
         {
             get { return _canDrop; }
         }
+
+        #endregion
 
         private byte[][] _valueTable;
 

@@ -15,8 +15,8 @@ namespace Chess
             _chessboard = new ChessBoard();
             _rule = new Rule();
 
-            _Hunman = new Player(PlayerType.HUNMAN, DEF.CHESS_WHITE);
-            _PC = new Player(PlayerType.PC, DEF.CHESS_BLACK);
+            _Hunman = new Player(PlayerType.HUNMAN, Color.WHITE);
+            _PC = new Player(PlayerType.PC, Color.BLACK);
             currentPlayer = _Hunman;
 
             _droper = new Droper(_chessboard);
