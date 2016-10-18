@@ -183,7 +183,106 @@ namespace Chess
 
         #endregion
 
-        #region check how many same color chess in a line
+
+        #region 计算一串棋的价值
+
+        public static int calCost(ref Line line)
+        {
+            int cost = 0;
+            switch (line.length)
+            {
+                case 0:
+                    return cost = 0;
+                case 1:
+                    {
+                        switch (line.type)
+                        {
+                            case LineType.BothDead:
+                                cost = 0;
+                                break;
+                            case LineType.BothLive:
+                                cost = (int)Cost.One_1_2;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                cost = (int)Cost.One_1_1;
+                                break;
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        switch (line.type)
+                        {
+                            case LineType.BothDead:
+                                cost = 0;
+                                break;
+                            case LineType.BothLive:
+                                cost = (int)Cost.Tow_2_2;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                cost = (int)Cost.Tow_2_1;
+                                break;
+                        }
+                        break;
+                    }
+                case 3:
+                    {
+                        switch (line.type)
+                        {
+                            case LineType.BothDead:
+                                cost = 0;
+                                break;
+                            case LineType.BothLive:
+                                cost = (int)Cost.Three_3_2;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                cost = (int)Cost.Three_3_1;
+                                break;
+                        }
+                        break;
+                    }
+                case 4:
+                    {
+                        switch (line.type)
+                        {
+                            case LineType.BothDead:
+                                cost = 0;
+                                break;
+                            case LineType.BothLive:
+                                cost = (int)Cost.Four_4_2;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                cost = (int)Cost.Four_4_1;
+                                break;
+                        }
+                        break;
+                    }
+                default:
+                    cost = (int)Cost.Five;
+                    break;
+            }
+
+            line.cost = cost;
+            return cost;
+        }
+
+        #endregion
+
+        #region 计算一条线上的棋的价值
+        public static int calLinesCost(int row, int col, ref Line line_mid, ref Line line_min, ref Line line_max)
+        {
+            if(line_min.type == LineType.MinDeadMaxLive)
+            { 
+}
+            return 0;
+        }
+        #endregion
+
+        #region 计算一个坐标点的一条线上有多少个连续的棋
 
         public static int calHorizontalCount(byte[][] data, int color, int row, int col, ref Line line)
         {
@@ -228,6 +327,7 @@ namespace Chess
             Logs.writeln("calHorizontalCount count = " + value_count + "   type = " + line.type, 2);
 
             line.length = value_count;
+            calCost(ref line);
             return line.length;
         }
 
@@ -275,6 +375,7 @@ namespace Chess
             Logs.writeln("calVerticalCount count = " + value_count + "   type = " + line.type, 2);
 
             line.length = value_count;
+            calCost(ref line);
             return line.length;
         }
 
@@ -337,6 +438,7 @@ namespace Chess
             Logs.writeln("calInclinedCount_LT count = " + value_count + "   type = " + line.type, 2);
 
             line.length = value_count;
+            calCost(ref line);
             return line.length;
         }
 
@@ -399,22 +501,26 @@ namespace Chess
             Logs.writeln("calInclinedCount_LB count = " + value_count + "   type = " + line.type, 2);
 
             line.length = value_count;
+            calCost(ref line);
             return line.length;
         }
+
         #endregion
 
+
+        #region 计算一条线上不连续的棋
 
         //计算水平方向一串棋首尾是否还有不连续的棋
         public static int calHorizontalLine(byte[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
             //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
-            if (src.p1.col >= 2)
+            if (src.p1.col >= 2 && data[src.p1.row][src.p1.col - 2] == color)
             {
                 calHorizontalCount(data, color, src.p1.row, src.p1.col - 2, ref line1);
                 Logs.writeln("length = " + line1.length + " type = " + line1.type + "  p1 = (" + line1.p1.col + "," + line1.p1.row + ")," + "  p2 = (" + line1.p2.col + "," + line1.p2.row + "),", 2);
             }
 
-            if (src.p2.col <= Side.COL_ID - 2)
+            if (src.p2.col <= Side.COL_ID - 2 && data[src.p1.row][src.p1.col + 2] == color)
             {
                 calHorizontalCount(data, color, src.p2.row, src.p2.col + 2, ref line2);
                 Logs.writeln("length = " + line2.length + " type = " + line2.type + "  p1 = (" + line2.p1.col + "," + line2.p1.row + ")," + "  p2 = (" + line2.p2.col + "," + line2.p2.row + "),", 2);
@@ -426,13 +532,13 @@ namespace Chess
         public static int calVerticalLine(byte[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
             //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
-            if (src.p1.row >= 2)
+            if (src.p1.row >= 2 && data[src.p1.row - 2][src.p1.col] == color)
             {
                 calVerticalCount(data, color, src.p1.row - 2, src.p1.col, ref line1);
                 Logs.writeln("length = " + line1.length + " type = " + line1.type + "  p1 = (" + line1.p1.col + "," + line1.p1.row + ")," + "  p2 = (" + line1.p2.col + "," + line1.p2.row + "),", 2);
             }
 
-            if (src.p2.col <= Side.COL_ID - 2)
+            if (src.p2.row <= Side.ROW_ID - 2 && data[src.p1.row + 2][src.p1.col] == color)
             {
                 calVerticalCount(data, color, src.p2.row + 2, src.p2.col, ref line2);
                 Logs.writeln("length = " + line2.length + " type = " + line2.type + "  p1 = (" + line2.p1.col + "," + line2.p1.row + ")," + "  p2 = (" + line2.p2.col + "," + line2.p2.row + "),", 2);
@@ -444,13 +550,13 @@ namespace Chess
         public static int calInclined_LT(byte[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
             //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
-            if (src.p1.col >= 2 && src.p1.row > 2)
+            if (src.p1.col >= 2 && src.p1.row >= 2 && data[src.p1.row - 2][src.p1.col - 2] == color)
             {
                 calInclinedCount_LT(data, color, src.p1.row - 2, src.p1.col - 2, ref line1);
                 Logs.writeln("length = " + line1.length + " type = " + line1.type + "  p1 = (" + line1.p1.col + "," + line1.p1.row + ")," + "  p2 = (" + line1.p2.col + "," + line1.p2.row + "),", 2);
             }
 
-            if (src.p2.col <= Side.COL_ID - 2)
+            if (src.p2.col <= Side.COL_ID - 2 && src.p2.row <= Side.ROW_ID - 2 && data[src.p1.row + 2][src.p1.col + 2] == color)
             {
                 calInclinedCount_LT(data, color, src.p2.row + 2, src.p2.col + 2, ref line2);
                 Logs.writeln("length = " + line2.length + " type = " + line2.type + "  p1 = (" + line2.p1.col + "," + line2.p1.row + ")," + "  p2 = (" + line2.p2.col + "," + line2.p2.row + "),", 2);
@@ -462,20 +568,24 @@ namespace Chess
         public static int calInclined_LB(byte[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
             //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
-            if (src.p1.col >= 2 && src.p1.row <= Side.ROW_ID - 2)
+            if (src.p1.col >= 2 && src.p1.row <= Side.ROW_ID - 2 && data[src.p1.row + 2][src.p1.col - 2] == color)
             {
                 calInclinedCount_LB(data, color, src.p1.row + 2, src.p1.col - 2, ref line1);
-                Logs.writeln("length = " + line1.length + " type = " + line1.type + "  p1 = (" + line1.p1.col + "," + line1.p1.row + ")," + "  p2 = (" + line1.p2.col + "," + line1.p2.row + "),", 4);
+                Logs.writeln("length = " + line1.length + " type = " + line1.type + "  p1 = (" + line1.p1.col + "," + line1.p1.row + ")," + "  p2 = (" + line1.p2.col + "," + line1.p2.row + "),", 2);
             }
 
-            if (src.p2.row >= 2 && src.p2.col <= Side.COL_ID - 2)
+            if (src.p2.row >= 2 && src.p2.col <= Side.COL_ID - 2 && data[src.p1.row - 2][src.p1.col + 2] == color)
             {
                 calInclinedCount_LB(data, color, src.p2.row - 2, src.p2.col + 2, ref line2);
-                Logs.writeln("length = " + line2.length + " type = " + line2.type + "  p1 = (" + line2.p1.col + "," + line2.p1.row + ")," + "  p2 = (" + line2.p2.col + "," + line2.p2.row + "),", 4);
+                Logs.writeln("length = " + line2.length + " type = " + line2.type + "  p1 = (" + line2.p1.col + "," + line2.p1.row + ")," + "  p2 = (" + line2.p2.col + "," + line2.p2.row + "),", 2);
             }
             return src.length + line1.length + line2.length;
         }
 
+        #endregion
+
+
+        #region 计算增加的权值
 
         private static Line line_h = new Line();
         private static Line line_h_min = new Line();
@@ -493,11 +603,9 @@ namespace Chess
         private static Line line_lb_min = new Line();
         private static Line line_lb_max = new Line();
 
-        #region 计算增加的权值
-        public static byte[][] calIncreaseValue(byte[][] data, int color, int row, int col)
+        public static int calIncreaseValue(byte[][] data, int color, int row, int col)
         {
-            LineType l_type = LineType.BothLive;
-
+            int cost = 0;
             #region 水平增量
             {
                 line_h.clear();
@@ -505,12 +613,20 @@ namespace Chess
                 line_h_max.clear();
 
                 calHorizontalCount(data, color, row, col, ref line_h);
-                Logs.writeln("length = " + line_h.length + " type = " + l_type + "  p1 = (" + line_h.p1.col + "," + line_h.p1.row + ")," + "  p2 = (" + line_h.p2.col + "," + line_h.p2.row + "),", 2);
 
-                //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
+                //计算是否有不连续的棋
                 calHorizontalLine(data, color, line_h, ref line_h_min, ref line_h_max);
 
+                //if(line_h.cost > 0)
+                {
+                    Logs.writeln("length = " + line_h.length + " type = " + line_h.type + " cost = " + line_h.cost + "  p1 = (" + line_h.p1.col + "," + line_h.p1.row + ")," + "  p2 = (" + line_h.p2.col + "," + line_h.p2.row + "),", 3);
+                    Logs.writeln("length = " + line_h_min.length + " type = " + line_h_min.type + " cost = " + line_h_min.cost + "  p1 = (" + line_h_min.p1.col + "," + line_h_min.p1.row + ")," + "  p2 = (" + line_h_min.p2.col + "," + line_h_min.p2.row + "),", 3);
+                    Logs.writeln("length = " + line_h_max.length + " type = " + line_h_max.type + " cost = " + line_h_max.cost + "  p1 = (" + line_h_max.p1.col + "," + line_h_max.p1.row + ")," + "  p2 = (" + line_h_max.p2.col + "," + line_h_max.p2.row + "),", 3);
 
+                    cost += line_h.cost;
+                    cost += line_h_min.cost;
+                    cost += line_h_max.cost;
+                }
             }
             #endregion
 
@@ -521,10 +637,14 @@ namespace Chess
                 line_v_max.clear();
 
                 calVerticalCount(data, color, row, col, ref line_v);
-                Logs.writeln("length = " + line_v.length + " type = " + l_type + "  p1 = (" + line_v.p1.col + "," + line_v.p1.row + ")," + "  p2 = (" + line_v.p2.col + "," + line_v.p2.row + "),", 2);
+                Logs.writeln("length = " + line_v.length + " type = " + line_v.type + "  p1 = (" + line_v.p1.col + "," + line_v.p1.row + ")," + "  p2 = (" + line_v.p2.col + "," + line_v.p2.row + "),", 2);
 
-                //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
+                //计算是否有不连续的棋
                 calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
+
+                cost += line_v.cost;
+                cost += line_v_min.cost;
+                cost += line_v_max.cost;
             }
             #endregion
 
@@ -535,10 +655,14 @@ namespace Chess
                 line_lt_max.clear();
 
                 calInclinedCount_LT(data, color, row, col, ref line_lt);
-                Logs.writeln("length = " + line_lt.length + " type = " + l_type + "  p1 = (" + line_lt.p1.col + "," + line_lt.p1.row + ")," + "  p2 = (" + line_lt.p2.col + "," + line_lt.p2.row + "),", 2);
+                Logs.writeln("length = " + line_lt.length + " type = " + line_lt.type + "  p1 = (" + line_lt.p1.col + "," + line_lt.p1.row + ")," + "  p2 = (" + line_lt.p2.col + "," + line_lt.p2.row + "),", 2);
 
-                //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
+                //计算是否有不连续的棋
                 calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
+
+                cost += line_lt.cost;
+                cost += line_lt_min.cost;
+                cost += line_lt_max.cost;
             }
             #endregion
 
@@ -549,14 +673,18 @@ namespace Chess
                 line_lb_max.clear();
 
                 calInclinedCount_LB(data, color, row, col, ref line_lb);
-                Logs.writeln("length = " + line_lb.length + " type = " + l_type + "  p1 = (" + line_lb.p1.col + "," + line_lb.p1.row + ")," + "  p2 = (" + line_lb.p2.col + "," + line_lb.p2.row + "),", 4);
+                Logs.writeln("length = " + line_lb.length + " type = " + line_lb.type + "  p1 = (" + line_lb.p1.col + "," + line_lb.p1.row + ")," + "  p2 = (" + line_lb.p2.col + "," + line_lb.p2.row + "),", 2);
 
-                //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
+                //计算是否有不连续的棋
                 calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
+
+                cost += line_lb.cost;
+                cost += line_lb_min.cost;
+                cost += line_lb_max.cost;
             }
             #endregion
 
-            return null;
+            return cost;
         }
         #endregion
 

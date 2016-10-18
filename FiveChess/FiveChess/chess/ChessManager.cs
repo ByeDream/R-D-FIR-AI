@@ -113,7 +113,7 @@ namespace Chess
 
             _chessboard.setData(row, col, color);
 
-            _droper.calCanDrop(color);
+            _droper.calCanDrop(color, row, col);
 
             rule.checkWinner(_chessboard, row, col);
 

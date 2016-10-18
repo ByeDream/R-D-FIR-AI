@@ -41,23 +41,31 @@ namespace Chess
     //棋型的价值
     public enum Cost
     {
-        One = 1,        //=1, 独1
-        Tow_2_1,        //=2, 活2, 一头活
-        Tow_2_2,        //=3, 活2, 两头活
-        Three_3_1,      //=4, 活3, 一头活
-        Three_12_1,     //=5, 12断3, 一头活
-        Three_21_1,     //=6, 21断3, 一头活
-        Three_21_2,     //=7, 21断3, 两头活
-        Three_3_2,      //=8, 活3, 两头活
-        Four_22_1,      //=8, 22断4, 一头活
-        Four_13_1,      //=9, 13断4, 一头活
-        Four_4_1,       //=10, 活4, 一头活
-        Four_31_1,      //=11, 31断4, 一头活
-        Four_22_2,      //=12, 22断4, 两头活
-        Four_31_2,      //=13, 31断4, 两头活
+        One_1_1     = 10,   //独1 一头活
+        One_1_2     = 20,   //独1 两头活
+        Tow_2_1     = 25,   //活2, 一头活
+        Three_3_1   = 40,   //活3, 一头活
+        Tow_2_2     = 45,   //活2, 两头活
+        //Three_12_1,       //12断3, 一头活
+        //Three_21_1,       //21断3, 一头活
+        //Three_21_2,       //21断3, 两头活
+        //Four_22_1,        //22断4, 一头活
+        //Four_13_1,        //13断4, 一头活
+        Four_4_1    = 60,   //活4, 一头活
+        Three_3_2   = 80,   //活3, 两头活
+        //Four_31_1,        //31断4, 两头活
+        //Four_22_2,        //22断4, 两头活
+        //Four_31_2,        //31断4, 两头活
 
-        Four_4_2 = 256,             //=200, 活4，两头活
-        Five     = 999,             //=5,胜利
+        Four_4_2    = 500,  //=200, 活4，两头活
+        Five        = 10000,  //=5,胜利
+    }
+
+    public enum DropType
+    {
+        CANT_NOT    = 0,
+        CANT_DROP   = 1,
+        Better      = 2,
     }
 
     class Position
@@ -160,6 +168,7 @@ namespace Chess
             p1.col = p1.row = 0;
             p2.row = p2.col = 0;
             length = 0;
+            cost = 0;
             type = LineType.BothLive;
         }
 
@@ -169,6 +178,8 @@ namespace Chess
 
         public int length = 0;
 
-        public LineType type;
+        public LineType type = LineType.BothLive;
+
+        public int cost = 0;
     }
 }
