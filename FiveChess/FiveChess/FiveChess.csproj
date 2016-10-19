@@ -63,6 +63,7 @@
     <Compile Include="chess\UI.cs" />
     <EmbeddedResource Include="ChessForm.resx">
       <DependentUpon>ChessForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

@@ -19,7 +19,7 @@ namespace Chess
             _PC = new Player(PlayerType.PC, Color.BLACK);
             currentPlayer = _Hunman;
 
-            _droper = new Droper(_chessboard);
+            _droper = new Droper(_rule);
 
             _ui.chessboard = _chessboard;
         }
@@ -101,7 +101,6 @@ namespace Chess
         
         #endregion
 
-
         public void drawUI(Graphics g)
         {
             _ui.drawChess(g);
@@ -109,13 +108,14 @@ namespace Chess
 
         public void PlayChess(int row, int col)
         {
-            byte color = CurrentPlayer.color;
+            
+            int color = CurrentPlayer.color;
 
             _chessboard.setData(row, col, color);
 
             _droper.calCanDrop(color, row, col);
 
-            rule.checkWinner(_chessboard, row, col);
+            rule.checkWinner(_chessboard.Data, row, col);
 
             swapTurn();
         }

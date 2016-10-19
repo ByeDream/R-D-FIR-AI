@@ -10,11 +10,11 @@ namespace Chess
         //胜负未分
         GAMING = 0,
         //白胜
-        WHITE_WIN = 1,
+        WHITE_WIN = 1000000,
         //黑胜
-        BLACK_WIN = 2,
+        BLACK_WIN = 1000001,
         //和局
-        DRAW = 3,
+        DRAW = 1000002,
     }
 
     class Rule
@@ -29,22 +29,22 @@ namespace Chess
             return WinState.GAMING;
         }
 
-        public WinState checkWinner(ChessBoard cb, Position p)
+        public WinState checkWinner(int[][] data, Position p)
         {
-            return checkWinner(cb, p.row, p.col);
+            return checkWinner(data, p.row, p.col);
         }
 
         static Line Test_Line = new Line();
 
         //检测胜负，知道最后一步落子的情况下,只需要横竖斜4个方向是否有连续的5个子
-        public WinState checkWinner(ChessBoard cb, int row, int col)
+        public WinState checkWinner(int [][]data, int row, int col)
         {
             WinState check = WinState.GAMING;
-            byte chess_value = cb.Data[row][col];
-            Calculator.calIncreaseValue(cb.Data, chess_value, row, col);
+            int chess_value = data[row][col];
+            Calculator.calIncreaseValue(data, chess_value, row, col);
 
             //如果棋盘摆满了，先假设是和局
-            if (Calculator.isFullBoard(cb))
+            if (Calculator.isFullBoard(data))
             {
                 check = WinState.DRAW;
             }
@@ -52,32 +52,32 @@ namespace Chess
             //horizontal
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calHorizontalCount(cb.Data, chess_value, row, col, ref Test_Line);
+                Calculator.calHorizontalCount(data, chess_value, row, col, ref Test_Line);
                 //count = Calculator.hasHorizontalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
 
             //vertical
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calVerticalCount(cb.Data, chess_value, row, col, ref Test_Line);
+                Calculator.calVerticalCount(data, chess_value, row, col, ref Test_Line);
                 //count = Calculator.hasVerticalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
 
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calInclinedCount_LT(cb.Data, chess_value, row, col, ref Test_Line);
+                Calculator.calInclinedCount_LT(data, chess_value, row, col, ref Test_Line);
             }
 
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calInclinedCount_LB(cb.Data, chess_value, row, col, ref Test_Line);
+                Calculator.calInclinedCount_LB(data, chess_value, row, col, ref Test_Line);
             }
 
             if (Test_Line.length >= Con.WIN_COUNT)
             {
-                switch(chess_value)
+                switch(Test_Line.color)
                 {
                     case Color.BLACK:
                         Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n",Logs.level4);

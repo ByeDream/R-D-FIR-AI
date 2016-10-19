@@ -14,7 +14,7 @@ namespace Chess
 
     class Player
     {
-        public Player(PlayerType type, byte color)
+        public Player(PlayerType type, int color)
         {
             _type = type;
             _color = color;
@@ -27,8 +27,8 @@ namespace Chess
             set { _type = value; }
         }
 
-        private byte _color = 0;
-        public byte color
+        private int _color = 0;
+        public int color
         {
             get { return _color; }
             set { _color = value; }

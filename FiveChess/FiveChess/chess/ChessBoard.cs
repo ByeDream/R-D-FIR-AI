@@ -9,27 +9,27 @@ namespace Chess
     {
         public ChessBoard()
         {
-            _data = new byte[Side.ROW][];
+            _data = new int[Side.ROW][];
             for( int i = 0; i < Side.ROW; i++)
             {
-                _data[i] = new byte[Side.COL];
+                _data[i] = new int[Side.COL];
             }
         }
 
-        private byte[][] _data = null;
+        private int[][] _data = null;
 
-        public byte[][] Data
+        public int[][] Data
         {
             get { return _data; }
             set { _data = value; }
         }
 
-        public void setData(int row, int col, byte value)
+        public void setData(int row, int col, int value)
         {
             _data[row][col] = value;
         }
 
-        public void setData(Position p, byte value)
+        public void setData(Position p, int value)
         {
             _data[p.row][p.col] = value;
         }

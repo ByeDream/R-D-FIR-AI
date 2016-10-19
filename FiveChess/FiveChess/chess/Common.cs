@@ -13,11 +13,11 @@ namespace Chess
     public class Color
     {
         //没有棋子
-        public const byte NONE = 0;
+        public const int NONE = 0;
         //放了黑棋
-        public const byte BLACK = 1;
+        public const int BLACK = 1;
         //放了白棋
-        public const byte WHITE = 2;
+        public const int WHITE = 2;
     }
 
     public class Side
@@ -130,37 +130,60 @@ namespace Chess
             this.p2 = new Position(0, 0);
         }
 
-        public Line(Position p1, Position p2)
+        public Line(int col1, int row1, int col2, int row2, int color)
         {
-            if(p2.col == p1.col)
+            this.p1 = new Position(0, 0);
+            this.p2 = new Position(0, 0);
+            reset(col1, row1, col2, row2, color);
+        }
+
+        public Line(Position p1, Position p2, int color)
+        {
+            this.p1 = new Position(0, 0);
+            this.p2 = new Position(0, 0);
+
+            reset(p1.col,p1.row,p2.col,p2.row,color);
+        }
+
+        public void reset(int col1, int row1, int col2, int row2, int color)
+        {
+            if (col1 == col2)
             {
-                if(p2.row >= p1.row)
+                if (row2 >= row1)
                 {
-                    this.p1 = p1;
-                    this.p2 = p2;
+                    p1.row = row1;
+                    p1.col = col1;
+                    p2.row = row2;
+                    p2.col = col2;
                 }
                 else
                 {
-                    this.p1 = p2;
-                    this.p2 = p1;
+                    p1.row = row2;
+                    p1.col = col2;
+                    p2.row = row1;
+                    p2.col = col1;
                 }
             }
-            else if(p2.col > p1.col)
+            else if (col2 > col1)
             {
-                this.p1 = p2;
-                this.p2 = p1;
+                p1.row = row2;
+                p1.col = col2;
+                p2.row = row1;
+                p2.col = col1;
             }
             else
             {
-                this.p1 = p1;
-                this.p2 = p2;
+                p1.row = row1;
+                p1.col = col1;
+                p2.row = row2;
+                p2.col = col2;
             }
-
             int len1 = Math.Abs(p1.row - p2.row) + 1;
             int len2 = Math.Abs(p1.col - p2.col) + 1;
 
-            length = len1 > len2? len1:len2;
+            length = len1 > len2 ? len1 : len2;
             type = LineType.BothLive;
+            this.color = color;
         }
 
         public void clear()
@@ -170,6 +193,7 @@ namespace Chess
             length = 0;
             cost = 0;
             type = LineType.BothLive;
+            color = Color.NONE;
         }
 
         public Position p1;
@@ -181,5 +205,7 @@ namespace Chess
         public LineType type = LineType.BothLive;
 
         public int cost = 0;
+
+        public int color;
     }
 }
