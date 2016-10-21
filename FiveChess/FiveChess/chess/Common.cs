@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Chess
 {
-    class Con
+    public class Con
     {
         public const int WIN_COUNT = 5;
     }
@@ -51,8 +51,8 @@ namespace Chess
         //Three_21_2,       //21断3, 两头活
         //Four_22_1,        //22断4, 一头活
         //Four_13_1,        //13断4, 一头活
-        Four_4_1    = 60,   //活4, 一头活
-        Three_3_2   = 80,   //活3, 两头活
+        Four_4_1    = 250,   //活4, 一头活
+        Three_3_2   = 300,   //活3, 两头活
         //Four_31_1,        //31断4, 两头活
         //Four_22_2,        //22断4, 两头活
         //Four_31_2,        //31断4, 两头活
@@ -68,15 +68,16 @@ namespace Chess
         Better      = 2,
     }
 
-    class Position
+    public class Position
     {
-        public Position(int row, int col)
+        public Position(int row = 0, int col = 0, int value = 0)
         {
             _row = row > Side.ROW_ID ? Side.ROW_ID : row;
             _row = _row < 0 ? 0 : _row;
 
             _col = col > Side.COL_ID ? Side.COL_ID : col;
             _col = _col < 0 ? 0 : _col;
+            _value = value;
         }
 
         private int _row;
@@ -97,6 +98,40 @@ namespace Chess
             {
                 _col = value > Side.COL_ID ? Side.COL_ID : value;
                 _col = _col < 0 ? 0 : _col;
+            }
+        }
+        private int _value;
+        public int val
+        {
+            get { return _value; }
+            set
+            {
+                _value = value;
+            }
+        }
+        private int _color;
+        public int color
+        {
+            get { return _color; }
+            set
+            {
+                _color = value;
+            }
+        }
+        public static void sort(Position[] pos)
+        {
+            Position tmp = null;
+            for(int i = 0; i < pos.Length; i++)
+            {
+                for(int j = i; j < pos.Length; j++)
+                {
+                    if(pos[j].val > pos[i].val)
+                    {
+                        tmp = pos[j];
+                        pos[j] = pos[i];
+                        pos[i] = tmp;
+                    }
+                }
             }
         }
     }
@@ -122,7 +157,7 @@ namespace Chess
     ///     /// 0,0,0,0
     ///     /// p1,0,0,0
     /// </summary>
-    class Line
+    public  class Line
     {
         public Line()
         {

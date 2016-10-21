@@ -10,14 +10,14 @@ namespace Chess
         //胜负未分
         GAMING = 0,
         //白胜
-        WHITE_WIN = 1000000,
+        WHITE_WIN = 100000,
         //黑胜
-        BLACK_WIN = 1000001,
+        BLACK_WIN = 100000,
         //和局
-        DRAW = 1000002,
+        DRAW = 0,
     }
 
-    class Rule
+    public class Rule
     {
         public Rule() { }
 
@@ -41,8 +41,8 @@ namespace Chess
         {
             WinState check = WinState.GAMING;
             int chess_value = data[row][col];
-            Calculator.calIncreaseValue(data, chess_value, row, col);
 
+            Test_Line.reset(0, 0, 0, 0, 0);
             //如果棋盘摆满了，先假设是和局
             if (Calculator.isFullBoard(data))
             {
@@ -80,18 +80,18 @@ namespace Chess
                 switch(Test_Line.color)
                 {
                     case Color.BLACK:
-                        Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n",Logs.level4);
+                        //Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n",Logs.level4);
                         check = WinState.BLACK_WIN;
                         break;
                     case Color.WHITE:
-                        Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
+                        //Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
                         check = WinState.WHITE_WIN;
                         break;
                     default:
                         break;
                 }       
             }
-            Logs.writeln("Winer check = " + check);
+            //Logs.writeln("Winer check = " + check);
             return check;
         }
 

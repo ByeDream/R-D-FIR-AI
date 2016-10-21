@@ -5,15 +5,33 @@ using System.Text;
 
 namespace Chess
 {
-    class ChessBoard
+    public class ChessBoard
     {
         public ChessBoard()
         {
-            _data = new int[Side.ROW][];
-            for( int i = 0; i < Side.ROW; i++)
-            {
-                _data[i] = new int[Side.COL];
-            }
+            //_data = new int[Side.ROW][];
+            //for( int i = 0; i < Side.ROW; i++)
+            //{
+            //    _data[i] = new int[Side.COL];
+            //}
+
+            _data = new int[][]{
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 1, 1, 2, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0 ,0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                 };
         }
 
         private int[][] _data = null;

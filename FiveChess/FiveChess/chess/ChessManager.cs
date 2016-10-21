@@ -20,6 +20,7 @@ namespace Chess
             currentPlayer = _Hunman;
 
             _droper = new Droper(_rule);
+            _droper.setPCColor(_PC.color);
 
             _ui.chessboard = _chessboard;
         }
@@ -108,16 +109,31 @@ namespace Chess
 
         public void PlayChess(int row, int col)
         {
-            
             int color = CurrentPlayer.color;
 
             _chessboard.setData(row, col, color);
+            
+            _droper.copyBoard(_chessboard);
 
-            _droper.calCanDrop(color, row, col);
+            _droper.prepareThink();
+            _droper.think(_PC.color,row, col, 2);
+            _droper.printSteps();
 
-            rule.checkWinner(_chessboard.Data, row, col);
 
-            swapTurn();
+            WinState state = rule.checkWinner(_chessboard.Data, row, col);
+
+            switch (state)
+            {
+                case WinState.BLACK_WIN:
+                    Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n", Logs.level4);
+                    break;
+                case WinState.WHITE_WIN:
+                    Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
+                    break;
+                default:
+                    break;
+            }
+            //swapTurn();
         }
     }
 }
