@@ -5,18 +5,6 @@ using System.Text;
 
 namespace Chess
 {
-    public enum WinState
-    {
-        //胜负未分
-        GAMING = 0,
-        //白胜
-        WHITE_WIN = 100000,
-        //黑胜
-        BLACK_WIN = 100000,
-        //和局
-        DRAW = 0,
-    }
-
     public class Rule
     {
         public Rule() { }

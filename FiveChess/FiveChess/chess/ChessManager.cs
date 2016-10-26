@@ -112,13 +112,8 @@ namespace Chess
             int color = CurrentPlayer.color;
 
             _chessboard.setData(row, col, color);
-            
-            _droper.copyBoard(_chessboard);
 
-            _droper.prepareThink();
-            _droper.think(_PC.color,row, col, 2);
-            _droper.printSteps();
-
+            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 4);
 
             WinState state = rule.checkWinner(_chessboard.Data, row, col);
 
@@ -126,13 +121,30 @@ namespace Chess
             {
                 case WinState.BLACK_WIN:
                     Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n", Logs.level4);
-                    break;
+                    return;
                 case WinState.WHITE_WIN:
                     Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
-                    break;
+                    return;
                 default:
                     break;
             }
+
+            _chessboard.setData(p.row, p.col, p.color);
+
+            state = rule.checkWinner(_chessboard.Data, row, col);
+
+            switch (state)
+            {
+                case WinState.BLACK_WIN:
+                    Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n", Logs.level4);
+                    return;
+                case WinState.WHITE_WIN:
+                    Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
+                    return;
+                default:
+                    break;
+            }
+            
             //swapTurn();
         }
     }

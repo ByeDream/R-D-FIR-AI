@@ -6,178 +6,167 @@ using System.Collections;
 
 namespace Chess
 {
-    public class DropTable
-    {
-        public DropTable()
-        {
-            _Table = new Position[Side.COL * Side.ROW];
-            for(int i = 0; i < _Table.Length; i++)
-            {
-                _Table[i] = new Position();
-            }
-        }
-
-        public void clear()
-        {
-            for (int r = 0; r <= Side.ROW_ID; r++)
-            {
-                for (int c = 0; c <= Side.COL_ID; c++)
-                {
-                    _Table[r * Side.COL + c].row = 0;
-                    _Table[r * Side.COL + c].col = 0;
-                    _Table[r * Side.COL + c].val = 0;
-                    //Logs.write("(" + _Table[r * Side.COL + c].row + " " + _Table[r * Side.COL + c].col + ")" + _Table[r * Side.COL + c].val + ",\t\t\t", 4);
-                }
-                //Logs.writeln("", 4);
-            }
-        }
-
-        public void sort()
-        {
-            Position.sort(_Table);
-            for (int r = 0; r <= Side.ROW_ID; r++)
-            {
-                for (int c = 0; c <= Side.COL_ID; c++)
-                {
-                    //Logs.write("(" + _Table[r * Side.COL + c].row + " " + _Table[r * Side.COL + c].col + ")" + _Table[r *Side.COL + c]. val + ",\t\t\t", 4);
-                }
-                //Logs.writeln("", 4);
-            }
-        }
-
-        public void setValue(int row, int col, int value)
-        {
-            _Table[row * Side.ROW + col].col = col;
-            _Table[row * Side.ROW + col].row = row;
-            _Table[row * Side.ROW + col].val = value;
-        }
-
-        public int Length = Side.COL * Side.ROW;
-        private Position[] _Table;
-
-        public Position getValue(int pos)
-        {
-            return _Table[pos];
-        }
-
-        public Position getValue(int row, int col)
-        {
-            return _Table[row * Side.ROW + col];
-        }
-    }
-
     public class Droper
     {
         public Droper(Rule rule)
         {
             _rule = rule;
 
-            _data = new int[Side.ROW][];
-            _valueTable = new int[Side.ROW][];
+            _tmpChessTable = new int[Side.ROW][];
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
-                _valueTable[r] = new int[Side.COL];
-                _data[r] = new int[Side.COL];
+                _tmpChessTable[r] = new int[Side.COL];
             }
+        }
 
-            //价值表 赋值
-            int maxValue = Side.COL_ID / 2;
-            for (int r = 0; r <= Side.ROW_ID; r++)
+
+        StepTree st_temp = null;
+        public Position thinkNext(int [][]data, int color, int row, int col, int step)
+        {
+            copyBoard(data);
+
+            Position root = new Position(row, col, color);
+            st_temp = new StepTree(root);
+            think(ref root, ref st_temp, step);
+
+            return st_temp.selectBestPosition();
+            //st_temp.print();
+        }
+
+        public void setWinflg(int tempValue, ref int theBestValue, int next_color, ref bool win, ref bool fail)
+        {
+            if (next_color == Color.BLACK)
             {
-                for (int c = 0; c <= Side.COL_ID; c++)
+                if (tempValue != (int)WinState.WHITE_WIN && tempValue > theBestValue)
                 {
-                    int v_row = Math.Abs(maxValue - r);
-                    int v_col = Math.Abs(maxValue - c);
-
-                    if((v_row < v_col))
-                    {
-                        _valueTable[r][c] = (maxValue - v_col + 1);
-                    }
-                    else
-                    {
-                        _valueTable[r][c] = (maxValue - v_row + 1);
-                    }
-
-                    Logs.write( "" + _valueTable[r][c] + ",", Logs.level1);
+                    theBestValue = tempValue;
                 }
-                Logs.writeln("", Logs.level1);
             }
-        }
-
-
-        private Stack<Position> steps = new Stack<Position>();
-
-
-        public void prepareThink()
-        {
-            steps.Clear();
-        }
-
-        public void printSteps()
-        {
-            Logs.writeln("\n\n\n");
-            foreach (Position p in steps)
+            else if (next_color == Color.WHITE)
             {
-                //Logs.writeln("row = " + p.row + ", col = " + p.col + " color = " + p.val, 4);
+                if (tempValue > theBestValue)
+                {
+                    theBestValue = tempValue;
+                }
+            }
+
+            if (tempValue != (int)WinState.BLACK_WIN)
+            {
+                win = false;
+            }
+            if (tempValue != (int)WinState.WHITE_WIN)
+            {
+                fail = false;
             }
         }
 
-        public int think(int color, int row, int col, int deep)
+        public void setWinflg2(ref Position currentPos, ref StepTree st, ref bool win ,ref bool fail)
         {
-            if(deep <= 0)
+            if (win && currentPos.win == 0)
             {
-                return Calculator.calIncreaseValue(_data, color, row, col); ;
+                currentPos.win = (int)WinState.BLACK_WIN;
+                if (st.parent != null)
+                {
+                    st.parent.rootNode.win = (int)WinState.BLACK_WIN;
+                }
             }
 
-            WinState state = _rule.checkWinner(_data, row, col);
+            if (fail && currentPos.win == 0)
+            {
+                currentPos.win = (int)WinState.WHITE_WIN;
+                if (st.parent != null)
+                {
+                    st.parent.rootNode.win = (int)WinState.WHITE_WIN;
+                }
+            }
+        }
+
+        public int think(ref Position currentPos, ref StepTree st, int depth)
+        {
+            int row = currentPos.row;
+            int col = currentPos.col;
+            int color = currentPos.color;
+
+            st.rootNode.depth = depth;
+
+            int tempValue = 0, theBestValue = -0xfffffff;
+            int next_color = (color == Color.BLACK) ? Color.WHITE : Color.BLACK;
+
+            bool win = true, fail = true;
+
+            //保存棋子初始值, 并下这一步棋
+            Position pStep = new Position(row, col, 0, 0);
+            doStep(color, ref pStep);
+
+            //如果胜负已分出，返回胜负值
+            WinState state = _rule.checkWinner(_tmpChessTable, row, col);
             if (WinState.GAMING != state)
             {
+                setWinflg((int)state, ref theBestValue, next_color, ref win, ref fail);
+                setWinflg2(ref currentPos, ref st, ref win, ref fail);
+
+                unDodoStep(pStep);
                 return (int)state;
             }
 
-            DropTable dropTable = new DropTable();
-            calCanDrop(color, row, col, dropTable);
-
-            Position target = new Position();
-            int value, bestValue = 0;
-            int next_color = 0;
-            next_color = (color == Color.BLACK) ? Color.WHITE : Color.BLACK;
-
-            //steps.Push(new Position(row, col, color));
-            //Logs.writeln("000  push row = " + row + ", col = " + col + " color = " + color, 4);
-
-            for (int pos = 0; pos < dropTable.Length; pos++)
+            //如果计算到了最后一步，返回计算值
+            if (depth <= 0)
             {
-                Position p = dropTable.getValue(pos);
-                if(p.val == 0)
-                {
-                    break;
-                }
-                else if(p.val < 100)
-                {
-                    break;
-                }
+                int stepValue = Calculator.calIncreaseValue(_tmpChessTable, color, row, col);
+                stepValue += _BaseValueTable[row][col];
 
-                value = think(next_color, p.row, p.col, deep - 1);
-                if(value > bestValue)
-                {
-                    bestValue = value;
+                setWinflg(stepValue, ref theBestValue, next_color, ref win, ref fail);
+                setWinflg2(ref currentPos, ref st, ref win, ref fail);
 
-                    target.col = p.col;
-                    target.row = p.row;
-                    target.val = p.val;
-                    target.color = next_color;
-                }
-                //else
-                //{
-                //    Position p1 = steps.Pop();
-                //    Logs.writeln("333 pop row = " + p1.row + ", col = " + p1.col + "color = " + next_color, 4);
-                //}
+                unDodoStep(pStep);
+                return stepValue;
             }
-            steps.Push(target);
-            Logs.writeln("222 push row = " + target.row + ", col = " + target.col + "color = " + next_color, 4);
 
-            return bestValue;
+            //得到可以落子的表
+            DropTable canDropTable = new DropTable();
+            calCanDrop(_tmpChessTable, next_color, canDropTable);
+
+            //为了效率，取前8个值最大的点, 有一定的风险会找不到最优点
+            for (int pos = 0; pos <= 20; pos++)
+            {
+                Position pDrop = canDropTable.getValue(pos);
+                if(pDrop.val == 0)
+                {
+                    break;
+                }
+                else if(pDrop.val < 80)
+                {
+                    break;
+                }
+
+                //把这步棋加到树
+                StepTree childTree = new StepTree();
+                st.addChild(ref pDrop, ref childTree);
+
+                tempValue = think(ref pDrop, ref childTree, depth - 1);
+
+                setWinflg(tempValue, ref theBestValue, next_color, ref win, ref fail);
+            }
+
+            setWinflg2(ref currentPos, ref st,ref win,ref fail);
+
+            //Logs.writeln("deep = " + depth + "\trow=" + currentPos.row + "\tcol=" + currentPos.col + "\tcolor=" + currentPos.color + "\tval=" + currentPos.val + "\twin=" + currentPos.win, 4);
+
+            unDodoStep(pStep);
+            return theBestValue;
+        }
+
+        private void doStep(int color, ref Position pos)
+        {
+            if (pos.color != 0)
+                throw new Exception("Do error step.");
+            pos.color = _tmpChessTable[pos.row][pos.col];
+            _tmpChessTable[pos.row][pos.col] = color;
+        }
+
+        private void unDodoStep(Position pos)
+        {
+            _tmpChessTable[pos.row][pos.col] = pos.color;
         }
 
         public void setPCColor(int color)
@@ -185,87 +174,111 @@ namespace Chess
             _PCColor = color;
         }
 
-        public void copyBoard(ChessBoard cb)
+        public void copyBoard(int [][]data)
         {
             //复制棋盘
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
                 for (int c = 0; c <= Side.COL_ID; c++)
                 {
-                    _data[r][c] = cb.Data[r][c];
+                    _tmpChessTable[r][c] = data[r][c];
                 }
             }
         }
 
-        private Position tmp_pos = new Position();
-        public void setChessValue(int row ,int col, int value)
-        {
-            tmp_pos.row = row;
-            tmp_pos.col = col;
-            tmp_pos.val = _data[row][col];
-
-            _data[row][col] = value;
-        }
-
-        public void revertChessValue()
-        {
-            _data[tmp_pos.row][tmp_pos.col] = tmp_pos.val;
-
-            tmp_pos.row = 0;
-            tmp_pos.col = 0;
-            tmp_pos.val = 0;
-        }
 
         #region 计算可以落子的地方
 
-        public void calCanDrop(int color, int row, int col, DropTable dropTable)
+        public void calCanDrop(int[][] curColorTable, int color, DropTable canDropTable)
         {
+            int total_value = 0;
+            int tmp_color = 0;
+
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
                 for (int c = 0; c <= Side.COL_ID; c++)
                 {
-                    if (_data[r][c] != Color.NONE || (r == row && c == col))
+                    //如果已经有棋子存在，不能落子, 设为0值
+                    if (curColorTable[r][c] != Color.NONE)
                     {
-                        dropTable.setValue(r, c, 0);
-                        //Logs.write("(" + r + " " + c + ")" + dropTable.getValue(r, c) + ",\t\t\t", 4);
+                        canDropTable.setValue(r, c, 0, curColorTable[r][c]);
+                        //Logs.write("(" + r + " " + c + ")" + canDropTable.getValue(r, c).val + ",\t\t\t", 4);
                         continue;
                     }
-                    int total_value = 0, step_value = 0;
+
+                    total_value = 0;
 
                     //用基本的位置数值  清空数值表
-                    total_value += _valueTable[r][c];
+                    total_value += _BaseValueTable[r][c];
 
-                    //计算落子之后, 这一步棋的价值
-                    setChessValue(r, c, color);
-                    step_value = Calculator.calIncreaseValue(_data, color, r, c);
-                    total_value += step_value;
-
-                    revertChessValue();
+                    //假设落子,计算落子之后, 这一步棋的价值
+                    tmp_color = curColorTable[r][c];
+                    curColorTable[r][c] = color;
+                    total_value += Calculator.calIncreaseValue(curColorTable, color, r, c);
+                    //还原走过的棋
+                    curColorTable[r][c] = tmp_color;
 
                     if (total_value > 0)
-                        dropTable.setValue(r, c, total_value);
-
-                    //Logs.write("(" + r +" " + c +")" + dropTable.getValue(r, c) + ",\t\t\t", 4);
+                        canDropTable.setValue(r, c, total_value, color);
+                    else
+                        canDropTable.setValue(r, c, 0, color);
+                    //Logs.write("(" + r + " " + c + ")" + canDropTable.getValue(r, c).val + ",\t\t\t", 4);
                 }
                 //Logs.writeln("", 4);
             }
 
-            dropTable.sort();
+            canDropTable.sort();
         }
         #endregion
 
-        //估值表
-        private static int[][] _valueTable;
-
-        //计算出来的步数表
-        private int[][] _step;
-
         //临时棋盘
-        private int[][] _data;
+        private int[][] _tmpChessTable;
 
         private Rule _rule;
 
         private int _PCColor = Color.NONE;
-        //private Tree<Position> tree;
+
+        //估值表
+        public int[][] _BaseValueTable =
+        {
+           new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
+           new int[]{ 1,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+           new int[]{ 1,2,3,3,3,3,3,3,3,3,3,3,3,2,1 },
+           new int[]{ 1,2,3,4,4,4,4,4,4,4,4,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,5,5,5,5,5,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,6,6,6,6,6,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,6,7,7,7,6,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,6,7,8,7,6,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,6,7,7,7,6,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,6,6,6,6,6,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,5,5,5,5,5,5,5,4,3,2,1 },
+           new int[]{ 1,2,3,4,4,4,4,4,4,4,4,4,3,2,1 },
+           new int[]{ 1,2,3,3,3,3,3,3,3,3,3,3,3,2,1 },
+           new int[]{ 1,2,2,2,2,2,2,2,2,2,2,2,2,2,1 },
+           new int[]{ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 }
+        };
+
+        //价值表 赋值
+        //int maxValue = Side.COL_ID / 2;
+        //for (int r = 0; r <= Side.ROW_ID; r++)
+        //{
+        //    for (int c = 0; c <= Side.COL_ID; c++)
+        //    {
+        //        int v_row = Math.Abs(maxValue - r);
+        //        int v_col = Math.Abs(maxValue - c);
+
+        //        if((v_row < v_col))
+        //        {
+        //            _valueTable[r][c] = (maxValue - v_col + 1);
+        //        }
+        //        else
+        //        {
+        //            _valueTable[r][c] = (maxValue - v_row + 1);
+        //        }
+
+        //        //Logs.write( "" + _valueTable[r][c] + ",", 4);
+        //    }
+        //    //Logs.writeln("", 41);
+        //}
     }
 }

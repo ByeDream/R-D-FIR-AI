@@ -38,6 +38,18 @@ namespace Chess
         BothLive = 4, //大头小头都活着
     }
 
+    public enum WinState
+    {
+        //胜负未分
+        GAMING = 0,
+        //和局
+        DRAW = 1,
+        //黑胜
+        BLACK_WIN = 100000,
+        //白胜
+        WHITE_WIN = 100001,
+    }
+
     //棋型的价值
     public enum Cost
     {
@@ -58,7 +70,7 @@ namespace Chess
         //Four_31_2,        //31断4, 两头活
 
         Four_4_2    = 500,  //=200, 活4，两头活
-        Five        = 10000,  //=5,胜利
+        Five        = WinState.BLACK_WIN,  //=5,胜利
     }
 
     public enum DropType
@@ -70,13 +82,14 @@ namespace Chess
 
     public class Position
     {
-        public Position(int row = 0, int col = 0, int value = 0)
+        public Position(int row = 0, int col = 0, int color = 0, int value = 0)
         {
             _row = row > Side.ROW_ID ? Side.ROW_ID : row;
             _row = _row < 0 ? 0 : _row;
 
             _col = col > Side.COL_ID ? Side.COL_ID : col;
             _col = _col < 0 ? 0 : _col;
+            _color = color;
             _value = value;
         }
 
@@ -104,19 +117,40 @@ namespace Chess
         public int val
         {
             get { return _value; }
-            set
-            {
-                _value = value;
-            }
+            set { _value = value; }
         }
         private int _color;
         public int color
         {
             get { return _color; }
-            set
-            {
-                _color = value;
-            }
+            set { _color = value; }
+        }
+        private int _winValue;
+        public int win
+        {
+            get { return _winValue; }
+            set { _winValue = value; }
+        }
+        private int _depth;
+        public int depth
+        {
+            get { return _depth; }
+            set { _depth = value; }
+        }
+
+        public void reset(Position pos)
+        {
+            reset(pos._row, pos._col, pos._color, pos._value);
+        }
+        public void reset(int row = 0, int col = 0, int color = 0, int value = 0)
+        {
+            _row = row > Side.ROW_ID ? Side.ROW_ID : row;
+            _row = _row < 0 ? 0 : _row;
+
+            _col = col > Side.COL_ID ? Side.COL_ID : col;
+            _col = _col < 0 ? 0 : _col;
+            _color = color;
+            _value = value;
         }
         public static void sort(Position[] pos)
         {
