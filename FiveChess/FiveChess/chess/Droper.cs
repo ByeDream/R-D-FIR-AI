@@ -27,7 +27,10 @@ namespace Chess
 
             Position root = new Position(row, col, color);
             st_temp = new StepTree(root);
-            think(ref root, ref st_temp, step);
+
+            int value = Calculator.calIncreaseValue(_tmpChessTable, ref root);
+
+            //think(ref root, ref st_temp, step);
 
             return st_temp.selectBestPosition();
             //st_temp.print();
@@ -62,21 +65,21 @@ namespace Chess
 
         public void setWinflg2(ref Position currentPos, ref StepTree st, ref bool win ,ref bool fail)
         {
-            if (win && currentPos.win == 0)
+            if (win)
             {
                 currentPos.win = (int)WinState.BLACK_WIN;
                 if (st.parent != null)
                 {
-                    st.parent.rootNode.win = (int)WinState.BLACK_WIN;
+                    st.parent.rootNode.haveWin = 1;
                 }
             }
 
-            if (fail && currentPos.win == 0)
+            if (fail)
             {
                 currentPos.win = (int)WinState.WHITE_WIN;
                 if (st.parent != null)
                 {
-                    st.parent.rootNode.win = (int)WinState.WHITE_WIN;
+                    st.parent.rootNode.haveFail = 1;
                 }
             }
         }
@@ -112,7 +115,7 @@ namespace Chess
             //如果计算到了最后一步，返回计算值
             if (depth <= 0)
             {
-                int stepValue = Calculator.calIncreaseValue(_tmpChessTable, color, row, col);
+                int stepValue = Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
                 stepValue += _BaseValueTable[row][col];
 
                 setWinflg(stepValue, ref theBestValue, next_color, ref win, ref fail);
@@ -127,14 +130,10 @@ namespace Chess
             calCanDrop(_tmpChessTable, next_color, canDropTable);
 
             //为了效率，取前8个值最大的点, 有一定的风险会找不到最优点
-            for (int pos = 0; pos <= 20; pos++)
+            for (int pos = 0; pos < canDropTable.Length; pos++)
             {
                 Position pDrop = canDropTable.getValue(pos);
-                if(pDrop.val == 0)
-                {
-                    break;
-                }
-                else if(pDrop.val < 80)
+                if(pDrop.val == 0 || pDrop.alone)
                 {
                     break;
                 }
@@ -191,9 +190,8 @@ namespace Chess
 
         public void calCanDrop(int[][] curColorTable, int color, DropTable canDropTable)
         {
-            int total_value = 0;
             int tmp_color = 0;
-
+            Position dropP = null;
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
                 for (int c = 0; c <= Side.COL_ID; c++)
@@ -201,33 +199,28 @@ namespace Chess
                     //如果已经有棋子存在，不能落子, 设为0值
                     if (curColorTable[r][c] != Color.NONE)
                     {
-                        canDropTable.setValue(r, c, 0, curColorTable[r][c]);
+                        //dropP = new Position(r, c, curColorTable[r][c], 0);
+                        //canDropTable.addPosition(ref dropP);
                         //Logs.write("(" + r + " " + c + ")" + canDropTable.getValue(r, c).val + ",\t\t\t", 4);
                         continue;
                     }
 
-                    total_value = 0;
-
-                    //用基本的位置数值  清空数值表
-                    total_value += _BaseValueTable[r][c];
-
                     //假设落子,计算落子之后, 这一步棋的价值
                     tmp_color = curColorTable[r][c];
                     curColorTable[r][c] = color;
-                    total_value += Calculator.calIncreaseValue(curColorTable, color, r, c);
+
+                    dropP = new Position(r, c, color, _BaseValueTable[r][c]);
+                    Calculator.calIncreaseValue(curColorTable, ref dropP);
+
                     //还原走过的棋
                     curColorTable[r][c] = tmp_color;
 
-                    if (total_value > 0)
-                        canDropTable.setValue(r, c, total_value, color);
-                    else
-                        canDropTable.setValue(r, c, 0, color);
+                    canDropTable.addPosition(ref dropP);
                     //Logs.write("(" + r + " " + c + ")" + canDropTable.getValue(r, c).val + ",\t\t\t", 4);
                 }
                 //Logs.writeln("", 4);
             }
-
-            canDropTable.sort();
+            //canDropTable.sort();
         }
         #endregion
 

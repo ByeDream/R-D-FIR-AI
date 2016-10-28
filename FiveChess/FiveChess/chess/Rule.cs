@@ -28,39 +28,38 @@ namespace Chess
         public WinState checkWinner(int [][]data, int row, int col)
         {
             WinState check = WinState.GAMING;
-            int chess_value = data[row][col];
 
             Test_Line.reset(0, 0, 0, 0, 0);
             //如果棋盘摆满了，先假设是和局
-            if (Calculator.isFullBoard(data))
-            {
-                check = WinState.DRAW;
-            }
+            //if (Calculator.isFullBoard(data))
+            //{
+            //    check = WinState.DRAW;
+            //}
 
             //horizontal
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calHorizontalCount(data, chess_value, row, col, ref Test_Line);
+                Calculator.calHorizontalCount(data, row, col, ref Test_Line);
                 //count = Calculator.hasHorizontalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
 
             //vertical
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calVerticalCount(data, chess_value, row, col, ref Test_Line);
+                Calculator.calVerticalCount(data, row, col, ref Test_Line);
                 //count = Calculator.hasVerticalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
 
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calInclinedCount_LT(data, chess_value, row, col, ref Test_Line);
+                Calculator.calInclinedCount_LT(data, row, col, ref Test_Line);
             }
 
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
-                Calculator.calInclinedCount_LB(data, chess_value, row, col, ref Test_Line);
+                Calculator.calInclinedCount_LB(data, row, col, ref Test_Line);
             }
 
             if (Test_Line.length >= Con.WIN_COUNT)
