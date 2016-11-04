@@ -113,9 +113,9 @@ namespace Chess
 
             _chessboard.setData(row, col, color);
 
-            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 3);
+            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 10);
 
-            WinState state = rule.checkWinner(_chessboard.Data, row, col);
+            int state = rule.checkWinner(_chessboard.Data, row, col);
 
             switch (state)
             {
@@ -129,7 +129,7 @@ namespace Chess
                     break;
             }
 
-            //_chessboard.setData(p.row, p.col, p.color);
+            _chessboard.setData(p.row, p.col, p.color);
 
             state = rule.checkWinner(_chessboard.Data, p.row, p.col);
 

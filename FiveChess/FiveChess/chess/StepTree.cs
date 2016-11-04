@@ -36,6 +36,7 @@ namespace Chess
         {
             _bestPosition.reset();
             _priority = 0;
+            Logs.writeln("count = " + Droper.cal_count, 4);
             foreach (var node in _tree)
             {
                 if(_priority <= 5 && node.Value.rootNode.win == (int)WinState.BLACK_WIN )
@@ -48,7 +49,7 @@ namespace Chess
                     {
                         _bestPosition.reset(node.Value.rootNode);
                     }
-                        _priority = 3;
+                    _priority = 5;
                     Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
                 }
                 else if (_priority <= 4 && node.Value.rootNode.haveFail != 1)
@@ -61,7 +62,7 @@ namespace Chess
                     {
                         _bestPosition.reset(node.Value.rootNode);
                     }
-                        _priority = 4;
+                     _priority = 4;
                     Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
                 }
                 else if (_priority <= 3 && node.Value.rootNode.haveWin == 1)
@@ -74,7 +75,7 @@ namespace Chess
                     {
                         _bestPosition.reset(node.Value.rootNode);
                     }
-                        _priority = 3;
+                     _priority = 3;
                     Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
                 }
                 else if(_priority <= 1)

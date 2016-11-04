@@ -100,6 +100,15 @@ namespace Chess
             }
         }
 
+        public void print()
+        {
+            foreach(Position p in _data)
+            {
+                Logs.writeln("p.row=" + p.row + " p.col=" + p.col + " p.val=" + p.val + " p.color=" + p.color, 4);
+            }
+        }
+
+
         public int Length
         {
             get { return _data.Count; }

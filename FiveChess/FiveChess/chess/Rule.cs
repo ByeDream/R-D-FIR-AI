@@ -11,13 +11,13 @@ namespace Chess
 
         #region winner check
 
-        public WinState checkWinner( ChessBoard cb)
+        public int checkWinner( ChessBoard cb)
         {
             //TODO
             return WinState.GAMING;
         }
 
-        public WinState checkWinner(int[][] data, Position p)
+        public int checkWinner(int[][] data, Position p)
         {
             return checkWinner(data, p.row, p.col);
         }
@@ -25,9 +25,9 @@ namespace Chess
         static Line Test_Line = new Line();
 
         //检测胜负，知道最后一步落子的情况下,只需要横竖斜4个方向是否有连续的5个子
-        public WinState checkWinner(int [][]data, int row, int col)
+        public int checkWinner(int [][]data, int row, int col)
         {
-            WinState check = WinState.GAMING;
+            int check = WinState.GAMING;
 
             Test_Line.reset(0, 0, 0, 0, 0);
             //如果棋盘摆满了，先假设是和局
@@ -39,6 +39,7 @@ namespace Chess
             //horizontal
             if (Test_Line.length < Con.WIN_COUNT)
             {
+                Test_Line.clear();
                 Calculator.calHorizontalCount(data, row, col, ref Test_Line);
                 //count = Calculator.hasHorizontalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
@@ -46,6 +47,7 @@ namespace Chess
             //vertical
             if (Test_Line.length < Con.WIN_COUNT)
             {
+                Test_Line.clear();
                 Calculator.calVerticalCount(data, row, col, ref Test_Line);
                 //count = Calculator.hasVerticalCount(cb.Data, chess_value, Com.WIN_COUNT, row, col, out type);
             }
@@ -53,12 +55,14 @@ namespace Chess
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
+                Test_Line.clear();
                 Calculator.calInclinedCount_LT(data, row, col, ref Test_Line);
             }
 
             //inclined
             if (Test_Line.length < Con.WIN_COUNT)
             {
+                Test_Line.clear();
                 Calculator.calInclinedCount_LB(data, row, col, ref Test_Line);
             }
 

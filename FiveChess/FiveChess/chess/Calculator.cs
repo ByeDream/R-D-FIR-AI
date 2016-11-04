@@ -185,50 +185,63 @@ namespace Chess
 
         #region 计算一个坐标点的一条线上有多少个连续的棋
 
+        private static bool breal_h = false;
+        private static int color_h = 0;
+        private static int count_h = 0;
+        private static int min_col_h = 0;
+        private static int max_col_h = 0;
         public static int calHorizontalCount(int[][] data, int row, int col, ref Line line)
         {
-            int color = data[row][col];
-            if(color == Color.NONE)
-            {
-                return 0;
-            }
-
-            int value_count = 1;
-            line.color = color;
+            count_h = 1;
+            color_h = data[row][col];
+            line.color = color_h;
             line.p1.row = line.p2.row = row;
             line.p1.col = line.p2.col = col;
 
-            int min_col = col - 1;
-            while (min_col >= 0 && data[row][min_col] == color)
+            min_col_h = col - 1;
+            while (min_col_h >= 0 && data[row][min_col_h] == color_h)
             {
                 line.p1.row = row;
-                line.p1.col = min_col;
-                value_count++;
-                min_col--;
+                line.p1.col = min_col_h;
+                count_h++;
+                min_col_h--;
             }
-            if (min_col < 0 || data[row][min_col] != Color.NONE)
+            if (min_col_h < 0 || data[row][min_col_h] != Color.NONE)
             {
                 line.type = LineType.MinDeadMaxLive;
             }
-            else if(min_col > 0)
+            else if(min_col_h >= 0)
             {
-                while(min_col >=0 && data[row][min_col] == Color.NONE)
+                breal_h = false;
+                while (min_col_h >= 0)
                 {
-                    line.minSpace++;
-                    min_col--;
+                    if(data[row][min_col_h] != Color.NONE && data[row][min_col_h] != color_h)
+                    {
+                        break;
+                    }
+                    else if(data[row][min_col_h] == color_h)
+                    {
+                        breal_h = true;
+                    }
+                    else if(!breal_h)
+                    {
+                        line.minSpace++;
+                    }
+                    line.realSpace++;
+                    min_col_h--;
                 }
             }
 
-            int max_col = col + 1;
-            while (max_col <= Side.COL_ID && data[row][max_col] == color)
+            max_col_h = col + 1;
+            while (max_col_h <= Side.COL_ID && data[row][max_col_h] == color_h)
             {
                 line.p2.row = row;
-                line.p2.col = max_col;
-                value_count++;
-                max_col++;
+                line.p2.col = max_col_h;
+                count_h++;
+                max_col_h++;
             }
 
-            if (max_col > Side.COL_ID || data[row][max_col] != Color.NONE)
+            if (max_col_h > Side.COL_ID || data[row][max_col_h] != Color.NONE)
             {
                 if (line.type == LineType.BothLive)
                 {
@@ -239,69 +252,96 @@ namespace Chess
                     line.type = LineType.BothDead;
                 }
             }
-            else if (max_col < Side.COL_ID)
+            else if (max_col_h <= Side.COL_ID)
             {
-                while (max_col <= Side.COL_ID && data[row][max_col] == Color.NONE)
+                breal_h = false;
+                while (max_col_h <= Side.COL_ID)
                 {
-                    line.maxSpace++;
-                    max_col++;
+                    if (data[row][max_col_h] != Color.NONE && data[row][max_col_h] != color_h)
+                    {
+                        break;
+                    }
+                    else if (data[row][max_col_h] == color_h)
+                    {
+                        breal_h = true;
+                    }
+                    else if(!breal_h)
+                    {
+                        line.maxSpace++;
+                    }
+                    line.realSpace++;
+                    max_col_h++;
                 }
             }
-            Logs.writeln("calHorizontalCount count = " + value_count + "   type = " + line.type, 2);
 
-            line.length = value_count;
-            if(line.length > 1)
-            {
-                line.direction = Direction.Horizontal;
-            }
-            calCost(ref line);
+            line.length = count_h;
+            line.realSpace += count_h;
+            line.space = line.minSpace + line.length + line.maxSpace;
+
+            //if(line.length > 1)
+            //{
+            //    line.direction = Direction.Horizontal;
+            //}
             return line.length;
         }
 
+        private static bool breal_v = false;
+        private static int color_v = 0;
+        private static int count_v = 0;
+        private static int min_row_v = 0;
+        private static int max_row_v = 0;
         public static int calVerticalCount(int[][] data, int row, int col, ref Line line)
         {
-            int color = data[row][col];
-            if (color == Color.NONE)
-            {
-                return 0;
-            }
-
-            int value_count = 1;
-            line.color = color;
+            count_v = 1;
+            color_v = data[row][col];
+            line.color = color_v;
             line.p1.row = line.p2.row = row;
             line.p1.col = line.p2.col = col;
 
-            int min_row = row - 1;
-            while (min_row >= 0 && data[min_row][col] == color)
+            min_row_v = row - 1;
+            while (min_row_v >= 0 && data[min_row_v][col] == color_v)
             {
-                line.p1.row = min_row;
+                line.p1.row = min_row_v;
                 line.p1.col = col;
-                min_row--;
-                value_count++;
+                min_row_v--;
+                count_v++;
             }
-            if (min_row < 0 || data[min_row][col] != Color.NONE)
+            if (min_row_v < 0 || data[min_row_v][col] != Color.NONE)
             {
                 line.type = LineType.MinDeadMaxLive;
             }
-            else if (min_row > 0)
+            else if (min_row_v >= 0)
             {
-                while (min_row >= 0 && data[min_row][col] == Color.NONE)
+                breal_v = false;
+                while (min_row_v >= 0)
                 {
-                    line.minSpace++;
-                    min_row--;
+                    if (data[min_row_v][col] != Color.NONE && data[min_row_v][col] != color_v)
+                    {
+                        break;
+                    }
+                    else if (data[min_row_v][col] == color_v)
+                    {
+                        breal_v = true;
+                    }
+                    else if (!breal_v)
+                    {
+                        line.minSpace++;
+                    }
+                    line.realSpace++;
+                    min_row_v--;
                 }
             }
 
-            int max_row = row + 1;
-            while (max_row <= Side.ROW_ID && data[max_row][col] == color)
+            max_row_v = row + 1;
+            while (max_row_v <= Side.ROW_ID && data[max_row_v][col] == color_v)
             {
-                line.p2.row = max_row;
+                line.p2.row = max_row_v;
                 line.p2.col = col;
-                max_row++;
-                value_count++;
+                max_row_v++;
+                count_v++;
             }
 
-            if (max_row > Side.ROW_ID || data[max_row][col] != Color.NONE)
+            if (max_row_v > Side.ROW_ID || data[max_row_v][col] != Color.NONE)
             {
                 if (line.type == LineType.BothLive)
                 {
@@ -312,85 +352,105 @@ namespace Chess
                     line.type = LineType.BothDead;
                 }
             }
-            else if (max_row < Side.ROW_ID)
+            else if (max_row_v <= Side.ROW_ID)
             {
-                while (max_row <= Side.COL_ID && data[max_row][col] == Color.NONE)
+                breal_v = false;
+                while (max_row_v <= Side.COL_ID)
                 {
-                    line.maxSpace++;
-                    max_row++;
+                    if (data[max_row_v][col] != Color.NONE && data[max_row_v][col] != color_v)
+                    {
+                        break;
+                    }
+                    else if (data[max_row_v][col] == color_v)
+                    {
+                        breal_v = true;
+                    }
+                    else if (!breal_v)
+                    {
+                        line.maxSpace++;
+                    }
+                    line.realSpace++;
+                    max_row_v++;
                 }
             }
 
-            line.length = value_count;
-            if (line.length > 1)
-            {
-                line.direction = Direction.Vertical;
-            }
-            calCost(ref line);
+            line.length = count_v;
+            line.realSpace += count_v;
+            line.space = line.minSpace + line.length + line.maxSpace;
+            //if (line.length > 1)
+            //{
+            //    line.direction = Direction.Vertical;
+            //}
             return line.length;
         }
 
-        /// <summary>
-        /// Check line count from left top to right bottom
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="color"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        private static bool breal_lt = false;
+        private static int color_lt = 0;
+        private static int min_row_lt = 0;
+        private static int max_row_lt = 0;
+        private static int min_col_lt = 0;
+        private static int max_col_lt = 0;
+        private static int count_lt = 0;
+
         public static int calInclinedCount_LT(int[][] data, int row, int col, ref Line line)
         {
-            int color = data[row][col];
-            if (color == Color.NONE)
-            {
-                return 0;
-            }
-
-            int value_count = 1;
-
-            line.color = color;
+            count_lt = 1;
+            color_lt = data[row][col];
+            line.color = color_lt;
             line.p1.row = line.p2.row = row;
             line.p1.col = line.p2.col = col;
 
-            int min_row = row - 1;
-            int min_col = col - 1;
-            while (min_col >= 0 && min_row >= 0 && data[min_row][min_col] == color)
+            min_row_lt = row - 1;
+            min_col_lt = col - 1;
+            while (min_col_lt >= 0 && min_row_lt >= 0 && data[min_row_lt][min_col_lt] == color_lt)
             {
-                line.p1.row = min_row;
-                line.p1.col = min_col;
+                line.p1.row = min_row_lt;
+                line.p1.col = min_col_lt;
 
-                min_row--;
-                min_col--;
-                value_count++;
+                min_row_lt--;
+                min_col_lt--;
+                count_lt++;
             }
-            if (min_col < 0 || min_row < 0 || data[min_row][min_col] != Color.NONE)
+            if (min_col_lt < 0 || min_row_lt < 0 || data[min_row_lt][min_col_lt] != Color.NONE)
             {
                 line.type = LineType.MinDeadMaxLive;
             }
-            else if (min_col > 0 && min_row > 0)
+            else if (min_col_lt >= 0 && min_row_lt >= 0)
             {
-                while (min_col >= 0 && min_row >= 0 && data[min_row][min_col] == Color.NONE)
+                breal_lt = false;
+                while (min_col_lt >= 0 && min_row_lt >= 0)
                 {
-                    line.minSpace++;
-                    min_row--;
-                    min_col--;
+                    if (data[min_row_lt][min_col_lt] != Color.NONE && data[min_row_lt][min_col_lt] != color_lt)
+                    {
+                        break;
+                    }
+                    else if (data[min_row_lt][min_col_lt] == color_lt)
+                    {
+                        breal_lt = true;
+                    }
+                    else if (!breal_lt)
+                    {
+                        line.minSpace++;
+                    }
+                    line.realSpace++;
+                    min_row_lt--;
+                    min_col_lt--;
                 }
             }
 
-            int max_row = row + 1;
-            int max_col = col + 1;
-            while (max_col <= Side.COL_ID && max_row <= Side.ROW_ID && data[max_row][max_col] == color)
+            max_row_lt = row + 1;
+            max_col_lt = col + 1;
+            while (max_col_lt <= Side.COL_ID && max_row_lt <= Side.ROW_ID && data[max_row_lt][max_col_lt] == color_lt)
             {
-                line.p2.row = max_row;
-                line.p2.col = max_col;
+                line.p2.row = max_row_lt;
+                line.p2.col = max_col_lt;
 
-                max_row++;
-                max_col++;
-                value_count++;
+                max_row_lt++;
+                max_col_lt++;
+                count_lt++;
             }
 
-            if (max_col > Side.COL_ID || max_row > Side.ROW_ID || data[max_row][max_col] != Color.NONE)
+            if (max_col_lt > Side.COL_ID || max_row_lt > Side.ROW_ID || data[max_row_lt][max_col_lt] != Color.NONE)
             {
                 if (line.type == LineType.BothLive)
                 {
@@ -401,87 +461,108 @@ namespace Chess
                     line.type = LineType.BothDead;
                 }
             }
-            else if (max_col < Side.COL_ID && max_row < Side.ROW_ID)
+            else if (max_col_lt <= Side.COL_ID && max_row_lt <= Side.ROW_ID)
             {
-                while (max_col <= Side.COL_ID && max_row <= Side.COL_ID && data[max_row][max_col] == Color.NONE)
+                breal_lt = false;
+                while (max_col_lt <= Side.COL_ID && max_row_lt <= Side.COL_ID)
                 {
-                    line.maxSpace++;
-                    max_row++;
-                    max_col++;
+                    if (data[max_row_lt][max_col_lt] != Color.NONE && data[max_row_lt][max_col_lt] != color_lt)
+                    {
+                        break;
+                    }
+                    else if (data[max_row_lt][max_col_lt] == color_lt)
+                    {
+                        breal_lt = true;
+                    }
+                    else if (!breal_lt)
+                    {
+                        line.maxSpace++;
+                    }
+                    line.realSpace++;
+                    max_row_lt++;
+                    max_col_lt++;
                 }
             }
 
-            Logs.writeln("calInclinedCount_LT count = " + value_count + "   type = " + line.type, 2);
+            //Logs.writeln("calInclinedCount_LT count = " + count_lt + "   type = " + line.type, 2);
 
-            line.length = value_count;
-            if (line.length > 1)
-            {
-                line.direction = Direction.LetfTopToRightBottom;
-            }
-            calCost(ref line);
+            line.length = count_lt;
+            line.realSpace += count_lt;
+            line.space = line.minSpace + line.length + line.maxSpace;
+            //if (line.length > 1)
+            //{
+            //    line.direction = Direction.LetfTopToRightBottom;
+            //}
             return line.length;
         }
 
-        /// <summary>
-        /// Check line count from left top to right bottom
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="color"></param>
-        /// <param name="row"></param>
-        /// <param name="col"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
+        private static bool breal_lb = false;
+        private static int color_lb = 0;
+        private static int min_row_lb = 0;
+        private static int max_row_lb = 0;
+        private static int min_col_lb = 0;
+        private static int max_col_lb = 0;
+        private static int count_lb = 0;
+
         public static int calInclinedCount_LB(int[][] data, int row, int col, ref Line line)
         {
-            int color = data[row][col];
-            if (color == Color.NONE)
-            {
-                return 0;
-            }
-            int value_count = 1;
-
-            line.color = color;
+            count_lb = 1;
+            color_lb = data[row][col];
+            line.color = color_lb;
             line.p1.row = line.p2.row = row;
             line.p1.col = line.p2.col = col;
 
-            int min_col = col - 1;
-            int max_row = row + 1;
-            while (min_col >= 0 && max_row <= Side.ROW_ID && data[max_row][min_col] == color)
+            min_col_lb = col - 1;
+            max_row_lb = row + 1;
+            while (min_col_lb >= 0 && max_row_lb <= Side.ROW_ID && data[max_row_lb][min_col_lb] == color_lb)
             {
-                line.p1.row = max_row;
-                line.p1.col = min_col;
+                line.p1.row = max_row_lb;
+                line.p1.col = min_col_lb;
 
-                max_row++;
-                min_col--;
-                value_count++;
+                max_row_lb++;
+                min_col_lb--;
+                count_lb++;
             }
-            if (min_col < 0 || max_row > Side.ROW_ID || data[max_row][min_col] != Color.NONE)
+            if (min_col_lb < 0 || max_row_lb > Side.ROW_ID || data[max_row_lb][min_col_lb] != Color.NONE)
             {
                 line.type = LineType.MinDeadMaxLive;
             }
-            else if (min_col > 0 && max_row < Side.ROW_ID)
+            else if (min_col_lb >= 0 && max_row_lb <= Side.ROW_ID)
             {
-                while (min_col >= 0 && max_row <= Side.ROW_ID && data[max_row][min_col] == Color.NONE)
+                breal_lb = false;
+                while (min_col_lb >= 0 && max_row_lb <= Side.ROW_ID)
                 {
-                    line.minSpace++;
-                    max_row++;
-                    min_col--;
+                    if (data[max_row_lb][min_col_lb] != Color.NONE && data[max_row_lb][min_col_lb] != color_lb)
+                    {
+                        break;
+                    }
+                    else if (data[max_row_lb][min_col_lb] == color_lb)
+                    {
+                        breal_lb = true;
+                    }
+                    else if (!breal_lb)
+                    {
+                        line.minSpace++;
+                    }
+                    line.realSpace++;
+                    max_row_lb++;
+                    min_col_lb--;
                 }
             }
 
-            int min_row = row - 1;
-            int max_col = col + 1;
-            while (max_col <= Side.COL_ID && min_row >= 0 && data[min_row][max_col] == color)
+            min_row_lb = row - 1;
+            max_col_lb = col + 1;
+            while (max_col_lb <= Side.COL_ID && min_row_lb >= 0 && data[min_row_lb][max_col_lb] == color_lb)
             {
-                line.p2.row = min_row;
-                line.p2.col = max_col;
+                line.p2.row = min_row_lb;
+                line.p2.col = max_col_lb;
 
-                min_row--;
-                max_col++;
-                value_count++;
+                min_row_lb--;
+                max_col_lb++;
+                count_lb++;
             }
 
-            if (max_col > Side.COL_ID || min_row < 0 || data[min_row][max_col] != Color.NONE)
+            if (max_col_lb > Side.COL_ID || min_row_lb < 0 || data[min_row_lb][max_col_lb] != Color.NONE)
             {
                 if (line.type == LineType.BothLive)
                 {
@@ -492,22 +573,36 @@ namespace Chess
                     line.type = LineType.BothDead;
                 }
             }
-            else if (max_col < Side.COL_ID && min_row > 0)
+            else if (max_col_lb <= Side.COL_ID && min_row_lb >= 0)
             {
-                while (max_col <= Side.COL_ID && min_row >= 0 && data[min_row][max_col] == Color.NONE)
+                breal_lb = false;
+                while (max_col_lb <= Side.COL_ID && min_row_lb >= 0)
                 {
-                    line.maxSpace++;
-                    min_row--;
-                    max_col++;
+                    if (data[min_row_lb][max_col_lb] != Color.NONE && data[min_row_lb][max_col_lb] != color_lb)
+                    {
+                        break;
+                    }
+                    else if (data[min_row_lb][max_col_lb] == color_lb)
+                    {
+                        breal_lb = true;
+                    }
+                    else if (!breal_lb)
+                    {
+                        line.maxSpace++;
+                    }
+                    line.realSpace++;
+                    min_row_lb--;
+                    max_col_lb++;
                 }
             }
 
-            line.length = value_count;
-            if (line.length > 1)
-            {
-                line.direction = Direction.LetfBottomToRightTop;
-            }
-            calCost(ref line);
+            line.length = count_lb;
+            line.realSpace += count_lb;
+            line.space = line.minSpace + line.length + line.maxSpace;
+            //if (line.length > 1)
+            //{
+            //    line.direction = Direction.LetfBottomToRightTop;
+            //}
             return line.length;
         }
 
@@ -516,7 +611,7 @@ namespace Chess
         #region 计算一条线上不连续的棋 或则 有其他颜色的棋
 
         //计算水平方向一串棋首尾是否还有不连续的棋 或则 有其他颜色的棋
-        public static int calHorizontalLine(int[][] data, int color, Line src, ref Line line1, ref Line line2)
+        public static void calHorizontalLine(int[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
             int tmp_color = Color.BLACK;
             if(color == Color.BLACK)
@@ -541,7 +636,7 @@ namespace Chess
             {
                 calHorizontalCount(data, src.p2.row, src.p2.col + 2, ref line2);
             }
-            return src.length + line1.length + line2.length;
+            //return src.length + line1.length + line2.length;
         }
 
         //计算垂直方向一串棋首尾是否还有不连续的棋
@@ -635,27 +730,111 @@ namespace Chess
         #endregion
 
         #region 计算一串棋的价值
+        private static int l_cost1 = 0;
+        public static int calCost(int length, LineType type)
+        {
+            l_cost1 = 0;
+            switch (length)
+            {
+                case 0:
+                    return l_cost1 = 0;
+                case 1:
+                    {
+                        switch (type)
+                        {
+                            case LineType.BothDead:
+                                l_cost1 = 0;
+                                break;
+                            case LineType.BothLive:
+                                l_cost1 = Cost.One_1;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                l_cost1 = Cost.One_d1;
+                                break;
+                        }
+                        break;
+                    }
+                case 2:
+                    {
+                        switch (type)
+                        {
+                            case LineType.BothDead:
+                                l_cost1 = 0;
+                                break;
+                            case LineType.BothLive:
+                                l_cost1 = Cost.Tow_11;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                l_cost1 = Cost.Tow_d11;
+                                break;
+                        }
+                        break;
+                    }
+                case 3:
+                    {
+                        switch (type)
+                        {
+                            case LineType.BothDead:
+                                l_cost1 = 0;
+                                break;
+                            case LineType.BothLive:
+                                l_cost1 = Cost.Three_111;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                l_cost1 = Cost.Three_d111;
+                                break;
+                        }
+                        break;
+                    }
+                case 4:
+                    {
+                        switch (type)
+                        {
+                            case LineType.BothDead:
+                                l_cost1 = 0;
+                                break;
+                            case LineType.BothLive:
+                                l_cost1 = Cost.Four_1111;
+                                break;
+                            case LineType.MinDeadMaxLive:
+                            case LineType.MinLiveMaxDead:
+                                l_cost1 = Cost.Four_d1111;
+                                break;
+                        }
+                        break;
+                    }
+                default:
+                    l_cost1 = Cost.Five;
+                    break;
+            }
 
+            return l_cost1;
+        }
+
+        private static int l_cost2 = 0;
         public static int calCost(ref Line line)
         {
-            int cost = 0;
+            l_cost2 = 0;
             switch (line.length)
             {
                 case 0:
-                    return cost = 0;
+                    return l_cost2 = 0;
                 case 1:
                     {
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = 0;
+                                l_cost2 = 0;
                                 break;
                             case LineType.BothLive:
-                                cost = Cost.One_1_2;
+                                l_cost2 = Cost.One_1;
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = Cost.One_1_1;
+                                l_cost2 = Cost.One_d1;
                                 break;
                         }
                         break;
@@ -665,14 +844,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = 0;
+                                l_cost2 = 0;
                                 break;
                             case LineType.BothLive:
-                                cost = Cost.Tow_2_2;
+                                l_cost2 = Cost.Tow_11;
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = Cost.Tow_2_1;
+                                l_cost2 = Cost.Tow_d11;
                                 break;
                         }
                         break;
@@ -682,14 +861,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = 0;
+                                l_cost2 = 0;
                                 break;
                             case LineType.BothLive:
-                                cost = Cost.Three_3_2a;
+                                l_cost2 = Cost.Three_111;
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = Cost.Three_3_1a;
+                                l_cost2 = Cost.Three_d111;
                                 break;
                         }
                         break;
@@ -699,142 +878,424 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = 0;
+                                l_cost2 = 0;
                                 break;
                             case LineType.BothLive:
-                                cost = Cost.Four_4_2a;
+                                l_cost2 = Cost.Four_1111;
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = Cost.Four_4_1a;
+                                l_cost2 = Cost.Four_d1111;
                                 break;
                         }
                         break;
                     }
                 default:
-                    cost = Cost.Five;
+                    l_cost2 = Cost.Five;
                     break;
             }
 
-            line.cost = cost;
-            return cost;
+            line.cost = l_cost2;
+            return l_cost2;
         }
 
         #endregion
 
         #region 计算落子之后一串棋增加的价值
+        private static int cal_in_cost = 0;
         public static int calInCreaseCost(Line line, Position p)
         {
-            int cost = 0;
+            cal_in_cost = 0;
             switch (line.type)
             {
                 case LineType.BothDead: //小头（左上方）大头(右下方)都被堵死
-                    cost = 0;
+                    switch (line.length)
+                    {
+                        case 1:
+                        case 2:
+                        case 3:
+                        case 4:
+                            cal_in_cost = 0;
+                            break;
+                        default:
+                            cal_in_cost = Cost.Five;
+                            break;
+                    }
                     break;
                 case LineType.MinDeadMaxLive: //小头（左上方）堵死，大头(右下方)活着
-                    if (line.p1.row == p.row && line.p1.col == p.col)
-                    {
-                        switch (line.length)
-                        {
-                            case 1:
-                                cost = Cost.One_1_1;
-                                break;
-                            case 2:
-                                cost = Cost.One_add_1;
-                                break;
-                            case 3:
-                                cost = Cost.Tow_add_1;
-                                break;
-                            case 4:
-                                cost = Cost.Tree_add_1;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        switch (line.length)
-                        {
-                            case 1:
-                                cost = Cost.One_1_1;
-                                break;
-                            case 2:
-                                cost = Cost.One_add_1_a;
-                                break;
-                            case 3:
-                                cost = Cost.Tow_add_1;
-                                break;
-                            case 4:
-                                cost = Cost.Tree_add_1;
-                                break;
-                        }
-                    }
-                    break;
                 case LineType.MinLiveMaxDead: //小头（左上方）活着，大头(右下方)堵死
-                    if (line.p2.row == p.row && line.p2.col == p.col)
+                    switch (line.length)
                     {
-                        switch (line.length)
-                        {
-                            case 1:
-                                cost = Cost.One_1_1;
-                                break;
-                            case 2:
-                                cost = Cost.One_add_1;
-                                break;
-                            case 3:
-                                cost = Cost.Tow_add_1;
-                                break;
-                            case 4:
-                                cost = Cost.Tree_add_1;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        switch (line.length)
-                        {
-                            case 1:
-                                cost = Cost.One_1_1;
-                                break;
-                            case 2:
-                                cost = Cost.One_add_1_a;
-                                break;
-                            case 3:
-                                cost = Cost.Tow_add_1;
-                                break;
-                            case 4:
-                                cost = Cost.Tree_add_1;
-                                break;
-                        }
+                        case 1:
+                            cal_in_cost = Cost.One_d1;
+                            break;
+                        case 2:
+                            cal_in_cost = Cost.One_add_1_a;
+                            break;
+                        case 3:
+                            cal_in_cost = Cost.Tow_add_1_a;
+                            break;
+                        case 4:
+                            cal_in_cost = Cost.Three_add_1;
+                            break;
+                        default:
+                            cal_in_cost = Cost.Five;
+                            break;
                     }
                     break;
                 case LineType.BothLive: //大头小头都活着
                     switch (line.length)
                     {
                         case 1:
-                            cost = Cost.One_1_2;
+                            cal_in_cost = Cost.One_1;
                             break;
                         case 2:
-                            cost = Cost.One_add_1_b;
+                            cal_in_cost = Cost.One_add_1_b;
                             break;
                         case 3:
-                            cost = Cost.Two_add_1_b;
+                            cal_in_cost = Cost.Two_add_1_b;
                             break;
                         case 4:
-                            cost = Cost.Tree_add_1_b;
+                            cal_in_cost = Cost.Tree_add_1_a;
+                            break;
+                        default:
+                            cal_in_cost = Cost.Five;
                             break;
                     }
                     break;
                 default:
-                    cost = 0;
+                    cal_in_cost = 0;
                     break;
             }
-            return cost;
+            return cal_in_cost;
         }
+
+        private static int cal_in_cost1 = 0;
+        public static int calInCreasePrevCost(int[][] data, ref Line min, ref Line mid, ref Position p)
+        {
+            cal_in_cost1 = 0;
+
+            if (min.color == mid.color)
+            {
+                if (p.row == mid.p1.row && p.col == mid.p1.col)
+                {
+                    cal_in_cost1 += 300 * min.length - 10;
+                }
+
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost1 += calInCreaseCost(mid, p);
+                    cal_in_cost1 = cal_in_cost1 / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost1 += calInCreaseCost(mid, p);
+                }
+                else
+                {
+                    cal_in_cost1 = 0;
+                }
+            }
+            else
+            {
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost1 += calInCreaseCost(mid, p) / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost1 += calInCreaseCost(mid, p);
+                }
+
+                if (p.row == mid.p1.row && p.col == mid.p1.col)
+                {
+                    if ((mid.length == 1 ? mid.space + min.realSpace - min.maxSpace : 1 + min.realSpace) >= 5
+                        && (min.maxSpace == 0 || min.realSpace < 5))
+                    {
+                        switch(min.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost1 += 300 * min.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost1 += Cost.Four_d1111;
+                                break;
+                        }
+                    }
+                    //else if (min.realSpace == 5 && min.length < 3)
+                    //{
+                    //    cal_in_cost1 += 300 * min.length / 2 + 10;
+                    //}
+                }
+            }
+
+            return cal_in_cost1;
+        }
+
+        private static int cal_in_cost2 = 0;
+        public static int calInCreaseBehindCost(int[][] data, ref Line mid, ref Line max, ref Position p)
+        {
+            cal_in_cost2 = 0;
+            if (mid.color == max.color)
+            {
+                if (p.row == mid.p2.row && p.col == mid.p2.col)
+                {
+                    cal_in_cost2 += 300 * max.length - 10;
+                }
+                //else
+                //{
+                //    cal_in_cost2 += 150 * max.length - 20;
+                //}
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost2 += calInCreaseCost(mid, p);
+                    cal_in_cost2 = cal_in_cost2 / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost2 += calInCreaseCost(mid, p);
+                }
+                else
+                {
+                    cal_in_cost2 = 0;
+                }
+            }
+            else
+            {
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost2 += calInCreaseCost(mid, p) / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost2 += calInCreaseCost(mid, p);
+                }
+
+                if (p.row == mid.p2.row && p.col == mid.p2.col)
+                {
+                    //被压倒版边max.realSpace == 4 并且 max.length == 1并且mid.space = 3 会有个问题，可以忽略
+                    if ((mid.length == 1 ? max.realSpace + mid.space - max.minSpace : 1 + max.realSpace) >= 5
+                        && (max.minSpace == 0 || max.realSpace < 5))
+                    {
+                        switch (max.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost2 += 300 * max.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost2 += Cost.Four_d1111;
+                                break;
+                        }
+                    }
+                    //else if (max.realSpace == 5)
+                    //{
+                    //    cal_in_cost2 += 300 * max.length / 2 + 10;
+                    //}
+                }
+            }
+
+            return cal_in_cost2;
+        }
+
+        private static int cal_in_cost3 = 0;
+        public static int calInCreaseThreeCost(int[][] data, ref Line min, ref Line mid, ref Line max, ref Position p)
+        {
+            cal_in_cost3 = 0;
+            if ( mid.color == min.color && mid.color == max.color)
+            {
+                if (mid.length >= 3)
+                {
+                    return Cost.Five_1011101;
+                }
+                //if (p.row == mid.p1.row && p.col == mid.p1.col && p.row == mid.p2.row && p.col == mid.p2.col)
+                //{
+                cal_in_cost3 += 300 * max.length - 10;
+                    cal_in_cost3 += 300 * min.length - 10;
+                //}
+                //else if (p.row == mid.p2.row && p.col == mid.p2.col)
+                //{
+                //    cal_in_cost3 += 300 * max.length;
+                //}
+                //else
+                //{
+                //    cal_in_cost3 += 300 * min.length;
+                //}
+
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                    cal_in_cost3 = cal_in_cost3 / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                }
+                else
+                {
+                    cal_in_cost3 = 0;
+                }
+
+            }
+            else if(mid.color == min.color && mid.color != max.color)
+            {
+                if (p.row == mid.p1.row && p.col == mid.p1.col)
+                {
+                    cal_in_cost3 += 300 * min.length - 10;
+                }
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                    cal_in_cost3 = cal_in_cost3 / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                }
+
+                if (p.row == mid.p2.row && p.col == mid.p2.col)
+                {
+                    if ((mid.length == 1 ? max.realSpace + mid.space - max.minSpace : 1 + max.realSpace) >= 5
+                        && (max.minSpace == 0 || max.realSpace < 5))
+                    {
+                        switch (max.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost3 += 300 * max.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost3 += Cost.Four_skip;
+                                break;
+                        }
+                    }
+                    //else if (max.realSpace == 5)
+                    //{
+                    //    cal_in_cost3 += 300 * max.length / 2 + 10;
+                    //}
+                }
+                //else
+                //{
+                //    cal_in_cost3 += 150 * min.length;
+                //}
+            }
+            else if (mid.color != min.color && mid.color == max.color)
+            {
+                if (p.row == mid.p2.row && p.col == mid.p2.col)
+                {
+                    cal_in_cost3 += 300 * max.length - 10;
+                }
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                    cal_in_cost3 = cal_in_cost3 / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                }
+
+                if (p.row == mid.p1.row && p.col == mid.p1.col)
+                {
+                    if ((mid.length == 1 ? mid.space + min.realSpace - min.maxSpace: 1 + min.realSpace) >= 5
+                        && (min.maxSpace == 0 || min.realSpace < 5))
+                    {
+                        switch (min.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost3 += 300 * min.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost3 += Cost.Four_skip;
+                                break;
+                        }
+                    }
+                    //else if (min.realSpace == 5)
+                    //{
+                    //    cal_in_cost3 += 300 * min.length / 2 + 10;
+                    //}
+                }
+                //else
+                //{
+                //    cal_in_cost3 += 150 * min.length;
+                //}
+            }
+            else if (mid.color != min.color && mid.color != max.color)
+            {
+                if (mid.realSpace == 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p) / 2;
+                }
+                else if (mid.realSpace > 5)
+                {
+                    cal_in_cost3 += calInCreaseCost(mid, p);
+                }
+
+                if (mid.length == 1 && min.maxSpace == 0 && max.minSpace == 0 && min.length + max.length >= 4)
+                {
+                    return Cost.Four_skip;
+                }
+
+                if (p.row == mid.p1.row && p.col == mid.p1.col)
+                {
+                    if ((mid.length == 1 ? (min.realSpace + mid.length + max.realSpace) : (1 + min.realSpace)) >= 5
+                        && (min.maxSpace == 0 || min.realSpace < 5))
+                    {
+                        switch (min.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost3 += 300 * min.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost3 += Cost.Four_skip;
+                                break;
+                        }
+                    }
+                    //else if (min.realSpace == 5)
+                    //{
+                    //    cal_in_cost3 += 300 * min.length / 2 + 10;
+                    //}
+                }
+                if (p.row == mid.p2.row && p.col == mid.p2.col)
+                {
+                    if ( (mid.length == 1? (min.realSpace + mid.length + max.realSpace): (1 + max.realSpace)) >= 5
+                        && (max.minSpace == 0 || max.realSpace < 5))
+                    {
+                        switch (max.length)
+                        {
+                            case 1:
+                            case 2:
+                            case 3:
+                                cal_in_cost3 += 300 * max.length + 10;
+                                break;
+                            case 4:
+                                cal_in_cost3 += Cost.Four_skip;
+                                break;
+                        }
+                    }
+                    //else if (max.realSpace == 5)
+                    //{
+                    //    cal_in_cost3 += 300 * max.length/ 2 + 10;
+                    //}
+                }
+            }
+
+            return cal_in_cost3;
+        }
+
         #endregion
 
         #region 计算落子之后一串棋减少的权值
 
-        public static int calDreaseCost(Line line)
+        public static int calDreaseCost(ref Line line)
         {
             int cost = 0;
             switch (line.length)
@@ -846,14 +1307,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = (Cost.One_1_1);
+                                cost = (Cost.One_d1);
                                 break;
                             case LineType.BothLive:
                                 //throw new Exception("This step found no effect.");
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = (Cost.One_1_2 - Cost.One_1_1);
+                                cost = (Cost.One_1 - Cost.One_d1);
                                 break;
                         }
                         break;
@@ -863,14 +1324,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = (Cost.Tow_2_1);
+                                cost = (Cost.Tow_d11);
                                 break;
                             case LineType.BothLive:
                                 //throw new Exception("This step found no effect.");
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = (Cost.Tow_2_2 - Cost.Tow_2_1);
+                                cost = (Cost.Tow_11 - Cost.Tow_d11);
                                 break;
                         }
                         break;
@@ -880,14 +1341,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = (Cost.Three_3_1a);
+                                cost = (Cost.Three_d111);
                                 break;
                             case LineType.BothLive:
                                 //throw new Exception("This step found no effect.");
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = (Cost.Three_3_2a - Cost.Three_3_1a);
+                                cost = (Cost.Three_111 - Cost.Three_d111);
                                 break;
                         }
                         break;
@@ -897,14 +1358,14 @@ namespace Chess
                         switch (line.type)
                         {
                             case LineType.BothDead:
-                                cost = (Cost.Four_4_1a);
+                                cost = (Cost.Four_d1111);
                                 break;
                             case LineType.BothLive:
                                 //throw new Exception("This step found no effect.");
                                 break;
                             case LineType.MinDeadMaxLive:
                             case LineType.MinLiveMaxDead:
-                                cost = (Cost.Four_4_2a - Cost.Four_4_1a);
+                                cost = (Cost.Four_1111 - Cost.Four_d1111);
                                 break;
                         }
                         break;
@@ -920,104 +1381,130 @@ namespace Chess
         #endregion
 
         #region 计算落子后一串不连续的棋增加的价值
-        public static int calUnSequentialLineCost(int[][] data, ref Line begin, ref Line mid, ref Line end, Position p)
+        public static int calUnSequentialLineCost(int[][] data, ref Line min, ref Line mid, ref Line max, Position p)
         {
-            int cost;
-            if(begin.length > 0 && end.length > 0)
+            if(min.length == 0 && max.length == 0)
             {
-                if (begin.color == mid.color && end.color == mid.color)
+                if (mid.realSpace < 5)
                 {
-                    //空间不足以5连
-                    int len = begin.length + end.length + mid.length;
-                    int space = 2 + begin.minSpace + end.maxSpace;
-                    switch(len)
-                    {
-                        case 3:
-                            switch(space)
-                            {
-                                case 2:
-                                case 3:
-                                    cost = Cost.Three_111_0a;
-                                    break;
-                                case 4:
-                                    cost = Cost.Three_111_1a;
-                                    break;
-                                default:
-                                    cost = Cost.Three_111_2a;
-                                    break;
-                            }
-                            break;
-                        case 4:
-                            switch (space)
-                            {
-                                case 2:
-                                    cost = Cost.Four_211_0a;
-                                    break;
-                                case 3:
-                                    if (mid.length == 2 || (begin.length == 2 && begin.type == LineType.BothLive) || (end.length == 2 && end.type == LineType.BothLive))
-                                        cost = Cost.Four_211_2a;
-                                    else
-                                        cost = Cost.Four_211_1a;
-                                    break;
-                                default:
-                                    cost = Cost.Four_211_12a;
-                                    break;
-                            }
-                            break;
-                        case 5:
-                            switch (space)
-                            {
-                                case 2:
-                                    if (mid.length == 1)
-                                    {
-                                        if (begin.length == 2)
-                                            cost = Cost.Fiv_212_0a;
-                                        if (begin.length == 3 || begin.length == 1)
-                                            cost = 1;
-                                    }
-                                    else if (mid.length == 2)
-                                    {
-                                        cost = Cost.Fiv_221_0a;
-                                    }
-                                    else if (mid.length == 3)
-                                    {
-                                        cost = Cost.Fiv_131_0a;
-                                    }
-                                    break;
-                                case 3:
-                                    if (mid.length == 1)
-                                    {
-                                        if (begin.length == 2)
-                                            cost = Cost.Fiv_212_0a;
-                                        if (begin.length == 3 || begin.length == 1)
-                                            cost = 1;
-                                    }
-                                    else if (mid.length == 2)
-                                    {
-                                        cost = Cost.Fiv_221_0a;
-                                    }
-                                    else if (mid.length == 3)
-                                    {
-                                        cost = Cost.Fiv_131_0a;
-                                    }
-                                    break;
-                                default:
-                                    cost = Cost.Four_211_12a;
-                                    break;
-                            }
-                            break;
-                    }
+                    return 0;
                 }
+                if (mid.realSpace == 5)
+                {
+                    return calInCreaseCost(mid, p) / 2;
+                }
+                return calInCreaseCost(mid, p);
             }
-            else if(begin.length > 0)
-            {
 
-            }
-            else if(end.length > 0)
+            if( min.length != 0 && max.length == 0)
             {
-
+                return calInCreasePrevCost(data, ref min, ref mid, ref p);
             }
-            return 0;
+
+            if (min.length == 0 && max.length != 0)
+            {
+                return calInCreaseBehindCost(data, ref mid, ref max, ref p);
+            }
+
+            return calInCreaseThreeCost(data, ref min, ref mid, ref max, ref p);
+
+            #region 对各种集体形状估值，没有必要
+                //switch (len)
+                //{
+                //    case 3:
+                //        switch (space)
+                //        {
+                //            case 2:
+                //            case 3:
+                //                cost = Cost.Three_d10101d;
+                //                break;
+                //            case 4:
+                //                cost = Cost.Three_d10101;
+                //                break;
+                //            default:
+                //                cost = Cost.Three_10101;
+                //                break;
+                //        }
+                //        break;
+                //    case 4:
+                //        {
+                //            switch (space)
+                //            {
+                //                case 2:
+                //                    cost = Cost.Four_d110101d;
+                //                    break;
+                //                case 3:
+                //                    if (mid.length == 2 || (begin.length == 2 && begin.type == LineType.BothLive) || (end.length == 2 && end.type == LineType.BothLive))
+                //                        cost = Cost.Four_110101d;
+                //                    else
+                //                        cost = Cost.Four_d110101;
+                //                    break;
+                //                default:
+                //                    cost = Cost.Four_110101;
+                //                    break;
+                //            }
+                //            break;
+                //        }
+                //    case 5:
+                //        {
+                //            switch (space)
+                //            {
+                //                case 2:
+                //                case 3:
+                //                    {
+                //                        switch (mid.length)
+                //                        {
+                //                            case 1:
+                //                                if (begin.length == 2)
+                //                                    cost = Cost.Fiv_d1101011d;
+                //                                else if (begin.length == 3 || begin.length == 1)
+                //                                    cost = Cost.Fiv_113_0a;
+                //                                break;
+                //                            case 2:
+                //                                cost = Cost.Fiv_1101101;
+                //                                break;
+                //                            case 3:
+                //                                cost = Cost.Fiv_131_0a;
+                //                                break;
+                //                        }
+                //                        break;
+                //                    }
+                //                default:
+                //                    {
+                //                        switch (mid.length)
+                //                        {
+                //                            case 1:
+                //                                if (begin.length == 2)
+                //                                    cost = Cost.Fiv_1101011;
+                //                                else if (begin.length == 3 || begin.length == 1)
+                //                                    cost = Cost.Fiv_113_2a;
+                //                                break;
+                //                            case 2:
+                //                                cost = Cost.Fiv_221_2a;
+                //                                break;
+                //                            case 3:
+                //                                cost = Cost.Fiv_131_2a;
+                //                                break;
+                //                        }
+                //                        break;
+                //                    }
+                //            }
+                //            break;
+                //        }
+                //    default:
+                //        switch (mid.length)
+                //        {
+                //            case 1:
+                //                if (len < 7)
+                //                {
+
+                //                }
+                //                break;
+                //        }
+                //        break;
+                //}
+                #endregion 
+
         }
         #endregion
 
@@ -1039,48 +1526,31 @@ namespace Chess
         private static Line line_lb_min = new Line();
         private static Line line_lb_max = new Line();
 
+        private static int color = 0;
+        private static int row = 0;
+        private static int col = 0;
+        private static int cost_v = 0;
+        private static int cost_h = 0;
+        private static int cost_lt = 0;
+        private static int cost_lb = 0;
         public static int calIncreaseValue(int[][] data, ref Position p)
         {
-            int color = p.color;
-            int row = p.row;
-            int col = p.col;
-            int cost = 0;
+            color = p.color;
+            row = p.row;
+            col = p.col;
             //是否是独子
             #region 水平增量
             {
-                int cost_v = 0;
                 line_h.clear();
                 line_h_min.clear();
                 line_h_max.clear();
 
                 calHorizontalCount(data, row, col, ref line_h);
-                cost = calInCreaseCost(line_h, p);
 
                 //计算是否有不连续的棋
                 calHorizontalLine(data, color, line_h, ref line_h_min, ref line_h_max);
 
-                calUnSequentialLineCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
-
-                if (line_h_min.color == color)
-                {
-
-                    cost += line_h_min.cost;
-                }
-                else
-                {
-                    cost += 2 * calDreaseCost(line_h_min); ;
-                }
-
-                if (line_h_max.color == color)
-                {
-                    cost += line_h_max.cost;
-                }
-                else
-                {
-                    cost += 2 * calDreaseCost(line_h_max);
-                }
-                cost_v = cost;
-                cost = 0;
+                cost_h = calUnSequentialLineCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
             }
             #endregion
 
@@ -1091,28 +1561,11 @@ namespace Chess
                 line_v_max.clear();
 
                 calVerticalCount(data, row, col, ref line_v);
-                cost = calInCreaseCost(line_h, p);
 
                 //计算是否有不连续的棋
                 calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
 
-                cost += line_v.cost;
-                if (line_v_min.color == color)
-                {
-                    cost += line_v_min.cost;
-                }
-                else
-                {
-                    cost += 2 * calDreaseCost(line_v_min);
-                }
-                if (line_v_max.color == color)
-                {
-                    cost += line_v_max.cost;
-                }
-                {
-                    cost += 2 * calDreaseCost(line_v_max);
-                }
-                cost = 0;
+                cost_v = calUnSequentialLineCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
             }
             #endregion
 
@@ -1127,24 +1580,7 @@ namespace Chess
                 //计算是否有不连续的棋
                 calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
 
-                cost += line_lt.cost;
-                if (line_lt_min.color == color)
-                {
-                    cost += line_lt_min.cost;
-                }
-                else
-                {
-                    cost += 2 * calDreaseCost(line_lt_min);
-                }
-                if (line_lt_max.color == color)
-                {
-                    cost += line_lt_max.cost;
-                }
-                {
-                    cost += 2 * calDreaseCost(line_lt_max);
-                }
-
-                cost = 0;
+                cost_lt = calUnSequentialLineCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
             }
             #endregion
 
@@ -1155,33 +1591,15 @@ namespace Chess
                 line_lb_max.clear();
 
                 calInclinedCount_LB(data, row, col, ref line_lb);
-                Logs.writeln("length = " + line_lb.length + " type = " + line_lb.type + "  p1 = (" + line_lb.p1.col + "," + line_lb.p1.row + ")," + "  p2 = (" + line_lb.p2.col + "," + line_lb.p2.row + "),", 2);
 
                 //计算是否有不连续的棋
                 calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
 
-                cost += line_lb.cost;
-                if (line_lb_min.color == color)
-                {
-                    cost += line_lb_min.cost;
-                }
-                else
-                {
-                    cost += 2 * calDreaseCost(line_lb_min);
-                }
-                if (line_lb_max.color == color)
-                {
-                    cost += line_lb_max.cost;
-                }
-                {
-                    cost += 2 * calDreaseCost(line_lb_max);
-                }
-
-                cost = 0;
+                cost_lb = calUnSequentialLineCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
             }
             #endregion
 
-            p.val += cost;
+            p.val += cost_h + cost_v + cost_lt + cost_lb;
 
             if(line_v.length == 1 && line_h.length == 1 && line_lb.length == 1 && line_lt.length == 1
                 && line_h_max.length == 0 && line_h_min.length == 0 && line_v_max.length == 0 && line_v_min.length == 0
@@ -1192,7 +1610,8 @@ namespace Chess
                 p.alone = true;
             }
 
-            return cost;
+            //Logs.writeln("cost=" + p.val, 4);
+            return p.val;
         }
         #endregion
 

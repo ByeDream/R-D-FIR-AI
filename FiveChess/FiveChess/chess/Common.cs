@@ -48,67 +48,105 @@ namespace Chess
         BothLive = 4, //大头小头都活着
     }
 
-    public enum WinState
+    public class WinState
     {
         //胜负未分
-        GAMING = 0,
+        public const int GAMING = 0;
         //和局
-        DRAW = 1,
+        public const int DRAW = 1;
         //黑胜
-        BLACK_WIN = 100000,
+        public const int BLACK_WIN = 100000;
         //白胜
-        WHITE_WIN = 100001,
+        public const int WHITE_WIN = 100001;
     }
 
     //棋型的价值
     public class Cost
     {
-        public const int One_1_1 = 50;      //独1 一头活
-        public const int One_1_2 = 100;     //独1 两头活
+        public const int One_d1 = 150;      //独1 一头活
+        public const int One_1 = 300;     //独1 两头活
 
-        public const int Tow_2_1 = 180;     //活2, 一头活
-        public const int Tow_2_2 = 400;     //活2, 两头活
+        public const int Tow_d11 = 600;     //活2, 一头活
+        public const int Tow_11 = 900;     //活2, 两头活
+        //public const int Tow_d101 = 400;     //活2, 一头活
+        //public const int Tow_101 = 600;     //活2, 两头活
 
-        public const int Three_3_1a = 410;   //活3, 一头活
-        public const int Three_3_2a = 800;   //活3, 两头活
-        public const int Three_111_0a = 200;   //两头被堵死的断三
-        public const int Three_111_1a = 410;   //一头被堵死的断三
-        public const int Three_111_2a = 500;   //两头活的断三
+        public const int Three_111 = 1800;   //活3, 两头活
+        public const int Three_d111 = 1200;   //活3, 一头活
+        //public const int Three_1011d = 450;   //活3, 有一的那头活
+        //public const int Three_d1011 = 455;   //活3, 有二的那头活
+        //public const int Three_1011 = 700;   //活3, 两头活
+        //public const int Three_10011d = 300;
+        //public const int Three_d101001 = 200;   //两头被堵死的断三
+        //public const int Three_d10101d = 200;   //两头被堵死的断三
+        //public const int Three_d10101 = 410;   //一头被堵死的断三
+        //public const int Three_10101 = 500;   //两头活的断三
 
-        public const int Four_211_0a = 200;   //两头被堵死的断四
-        public const int Four_211_1a = 350;   //一头被堵死的断四, 一活着
-        public const int Four_211_2a = 410;   //一头被堵死的断四, 二活着
-        public const int Four_211_12a = 800;   //一头被堵死的断四, 两头都活着
-        public const int Four_4_1a = 810;    //活4, 一头活
-        public const int Four_4_2a = 2000;   //=200, 活4，两头活
+        public const int Four_1111 = 3000;   //活4，两头活
+        public const int Four_d1111 = 2400;    //活4, 一头活
 
-        public const int Fiv_212_0a = 200;   //两头被堵死的断五
-        public const int Fiv_212_1a = 200;   //两头被堵死的断五
-        public const int Fiv_221_0a = 200;   //两头被堵死的断五
-        public const int Fiv_113_0a = 810;   //两头被堵死的断五
-        public const int Fiv_131_0a = 2000;   //两头被堵死的断五
-        public const int Fiv_5_2_1_a = 410;   //一头被堵死的断四, 二活着
-        public const int Fiv_5_2_2_a = 800;   //一头被堵死的断四, 两头都活着
+        public const int Five_1011101 = 3000;    //三段棋
+
+        //public const int Four_111001d = 850;   //断四, 两头都活着
+        //public const int Four_d111001 = 560;   //断四, 两头都活着
+        //public const int Four_d110101d = 900;   //两头被堵死的断四
+        //public const int Four_d110101 = 1050;   //一头被堵死的断四, 一活着
+        //public const int Four_110101d = 1110;   //一头被堵死的断四, 二活着
+        //public const int Four_110101 = 1500;   //断四, 两头都活着
+        //public const int Four_10111d = 1500;   //断四, 一活着
+        //public const int Four_d10111 = 1520;   //断四, 三活着
+        //public const int Four_11011d = 1500;   //断四, 一活着
+        //public const int Four_11011 = 1650;   //断四, 两头都活着
+        //public const int Four_10111 = 1650;   //断四, 一三活着
+
+        //public const int Fiv_d1101011d = 200;   //两头被堵死的断五
+        //public const int Fiv_1101011 = 800;   //两头活的断五
+        //public const int Fiv_1101101 = 820;   //两头被堵死的断五,相当于冲四
+        //public const int Fiv_221_2a = 1000;   //两头活的断五,相当于冲四
+        //public const int Fiv_111011 = 2000;   //两头活的断五,相当于冲四
+        //public const int Fiv_d111011 = 1800;   //两头活的断五,相当于冲四
+        //public const int Fiv_111011d = 1850;   //两头活的断五,相当于冲四
+        //public const int Fiv_113_0a = 810;   //两头被堵死的断五
+        //public const int Fiv_113_2a = 1000;   //两头被堵死的断五
+        //public const int Fiv_131_0a = 5000;   //两头被堵死的断五, 中间是3个，相当于两个冲四
+        //public const int Fiv_131_2a = 5000;   //两头被堵死的断五, 中间是3个，相当于两个冲四
+
         public const int Five = 100000;     //=5,胜利
 
-        public const int One_add_1 = 50;                            //1+1 一头活, 下了堵死的那头
-        public const int One_add_1_a = 150;                         //1+1 一头活, 下了活的的那头
-        public const int One_add_1_b = Tow_2_2 - One_1_2;           //1+1, 两头活,下了活的的那头
-        public const int Tow_add_1 = 150;                           //2+1, 一头活, 下了堵死的那头
-        public const int Tow_add_1_a = 200;                         //2+1, 一头活, 下了活的的那头
-        public const int Two_add_1_b = Three_3_2a - Tow_2_2;         //2+1, 两头活,下了活的的那头
-        public const int Tree_add_1 = 350;                          //3+1, 一头活, 下了堵死的那头
-        public const int Tree_add_1_a = 380;                        //3+1, 一头活, 下了活的的那头
-        public const int Tree_add_1_b = Four_4_2a - Three_3_2a;       //3+1, 两头活,下了活的的那头
+        //public const int One_add_1 = Tow_d11 - One_d1 - 10;                     //1+1 一头活, 下了堵死的那头
+        public const int One_add_1_a = Tow_d11 - One_d1;                        //1+1 一头活, 下了活的的那头
+        public const int One_add_1_b = Tow_11 - One_1;                          //1+1, 两头活,下了活的的那头
+        //public const int One_add_1_c = Tow_d101 - One_1 - 20;                   //1+1, 两头活,下了堵死的那头
+        //public const int One_add_1_d = Tow_d101 - One_d1;                       //1+1, 两头活,下了堵死的那头
+        //public const int One_add_1_e = Tow_101 - One_1;                         //1+1, 两头活
 
-        //Three_12_1,       //12断3, 一头活
-        //Three_21_1,       //21断3, 一头活
-        //Three_21_2,       //21断3, 两头活
-        //Four_22_1,        //22断4, 一头活
-        //Four_13_1,        //13断4, 一头活
-        //Four_31_1,        //31断4, 两头活
-        //Four_22_2,        //22断4, 两头活
-        //Four_31_2,        //31断4, 两头活
+        //public const int Tow_add_1 = Three_d111 - Tow_d11 - 10;                 //2+1, 一头活, 下了堵死的那头
+        public const int Tow_add_1_a = Three_d111 - Tow_d11;                    //2+1, 一头活, 下了活的的那头, 或则中间
+        public const int Two_add_1_b = Three_111 - Tow_11;                      //2+1, 两头活,下了活的那头
+        //public const int One_One_add_1_a = Three_1011d - Tow_101 - 20;          //1_1+1, 一头活, 下了1堵死的那头
+        //public const int One_One_add_1_b = Three_1011d - Tow_101;               //1_1+1, 一头活, 下了1活的那头,或者中间
+        //public const int One_One_add_1_c = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了1活的那头
+        //public const int One_One_add_1_d = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了2活的那头,或者中间
+        //public const int One_One_add_1_e = Three_1011 - Tow_101;                //1_1+1, 两头活, 下了任意位置
+
+        public const int Three_add_1 = Four_d1111 - Three_d111;                  //3+1, 一头活, 下了堵死的那头
+        public const int Tree_add_1_a = Four_1111 - Three_111 + 1000;                  //3+1, 两头活
+
+        public const int Four_skip = 20000;                                        //堵了一个四
+        //public const int Tow_One_add_1_a = Four_10111d - Three_1011 - 20;       //2_1+1, 一头活, 下了堵死的3
+        //public const int Tow_One_add_1_b = Four_10111d - Three_1011d;           //2_1+1, 一头活, 下了堵死的3
+        //public const int Tow_One_add_1_c = Four_11011d - Three_1011 - 20;       //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_d = Four_11011d - Three_10011d;          //2_1+1, 一头活, 下了堵死的2
+        //public const int Tow_One_add_1_e = Four_d10111 - Three_111;             //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_f = Four_11011d - Three_1011d;           //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_g = Four_d10111 - Three_d1011;           //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_h = Four_10111d - Three_d111;            //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_i = Four_10111 - Three_1011;             //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_j = Four_11011 - Three_1011;             //2_1+1, 一头活, 下了堵死的1
+        //public const int Tow_One_add_1_k = Four_10111 - Three_111;              //2_1+1, 一头活, 下了堵死的1
+
+        //public const int Three_One_add_1_a = Fiv_111011d - Four_111001d;          //2_1+1, 一头活, 下了堵死的1
+        //public const int Three_One_add_1_b = Fiv_d111011 - Four_d111001;          //2_1+1, 一头活, 下了堵死的1
     }
 
     public enum DropType
@@ -341,7 +379,9 @@ namespace Chess
             color = Color.NONE;
             minSpace = 0;
             maxSpace = 0;
-            direction = Direction.NONE;
+            //direction = Direction.NONE;
+            space = 0;
+            realSpace = 0;
         }
 
         public Position p1;
@@ -352,7 +392,7 @@ namespace Chess
 
         public LineType type = LineType.BothLive;
 
-        public int direction = Direction.NONE;
+        //public int direction = Direction.NONE;
 
         public int cost = 0;
 
@@ -361,5 +401,9 @@ namespace Chess
         public int minSpace = 0;
 
         public int maxSpace = 0;
+
+        public int space = 0;
+
+        public int realSpace = 0;
     }
 }
