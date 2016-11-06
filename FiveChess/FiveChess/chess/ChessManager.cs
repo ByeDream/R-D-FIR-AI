@@ -113,7 +113,7 @@ namespace Chess
 
             _chessboard.setData(row, col, color);
 
-            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 10);
+            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 3);
 
             int state = rule.checkWinner(_chessboard.Data, row, col);
 

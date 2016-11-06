@@ -57,7 +57,7 @@ namespace Chess
         //黑胜
         public const int BLACK_WIN = 100000;
         //白胜
-        public const int WHITE_WIN = 100001;
+        public const int WHITE_WIN = -100001;
     }
 
     //棋型的价值

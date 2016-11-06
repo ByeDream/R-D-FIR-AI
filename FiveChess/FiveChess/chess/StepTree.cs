@@ -54,11 +54,14 @@ namespace Chess
                 }
                 else if (_priority <= 4 && node.Value.rootNode.haveFail != 1)
                 {
-                    if (_bestPosition.haveFail == 1 || _bestPosition.haveFail == -1)
+                    if(_priority == 4)
                     {
-                        _bestPosition.reset(node.Value.rootNode);
+                        if (node.Value.rootNode.val > _bestPosition.val)
+                        {
+                            _bestPosition.reset(node.Value.rootNode);
+                        }
                     }
-                    else if (node.Value.rootNode.val > _bestPosition.val)
+                    else
                     {
                         _bestPosition.reset(node.Value.rootNode);
                     }
