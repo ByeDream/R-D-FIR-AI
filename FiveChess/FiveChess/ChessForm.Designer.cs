@@ -75,10 +75,12 @@ namespace FiveChess
 
             if(row != -1 && col != -1)
             {
-                chessMan.PlayChess(row, col);
-            }
+                chessMan.chessboard.setData(row, col, chessMan.Hunman.color);
+                this.Refresh();
 
-            this.Refresh();
+                chessMan.PlayChess(row, col);
+                this.Refresh();
+            }
         }
 
         //protected override void OnMouseCaptureChanged(EventArgs e)

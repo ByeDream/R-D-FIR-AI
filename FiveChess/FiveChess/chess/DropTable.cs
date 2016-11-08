@@ -46,7 +46,7 @@ namespace Chess
         //    }
         //}
 
-        public void addPosition(ref Position pos)
+        public void addPositionReverse(ref Position pos)
         {
             int low = 0;
             int hight = _data.Count;
@@ -100,6 +100,61 @@ namespace Chess
             }
         }
 
+        public void addPositionPositive(ref Position pos)
+        {
+            int low = 0;
+            int hight = _data.Count;
+            int mid = (low + _data.Count) / 2;
+            int current = 0;
+
+            //if (pos.row == 14 && pos.row == 14)
+            //{
+            //    Logs.write("\n\n", 4);
+            //    foreach (var p in _data)
+            //    {
+            //        Logs.write(p.val + "(" + p.alone +") ", 4);
+            //    }
+            //}
+
+            if (pos.val == 0)
+            {
+                return;
+            }
+            if (pos.alone)
+            {
+                _data.Add(pos);
+                return;
+            }
+            while (low < hight)
+            {
+                current = _data.ElementAt(mid).val;
+                if (current > pos.val)
+                {
+                    hight = mid - 1;
+                    mid = (low + hight) / 2;
+                }
+                else if (current < pos.val)
+                {
+                    low = mid + 1;
+                    mid = (low + hight) / 2;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            //_data.in
+            if (mid < _data.Count && _data.ElementAt(mid).val < pos.val)
+            {
+                _data.Insert(mid + 1, pos);
+            }
+            else
+            {
+                _data.Insert(mid, pos);
+            }
+        }
+
         public void print()
         {
             foreach(Position p in _data)
@@ -107,7 +162,6 @@ namespace Chess
                 Logs.writeln("p.row=" + p.row + " p.col=" + p.col + " p.val=" + p.val + " p.color=" + p.color, 4);
             }
         }
-
 
         public int Length
         {

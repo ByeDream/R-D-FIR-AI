@@ -20,263 +20,244 @@ namespace Chess
         }
 
 
-        StepTree st_temp = null;
-        public Position thinkNext(int [][]data, int color, int row, int col, int step)
+        //private StepTree st_temp = null;
+        private Position _bestPosition = null;
+        public Position think(int [][]data, int color, int row, int col, int depth)
         {
             copyBoard(data);
 
             Position root = new Position(row, col, color);
-            st_temp = new StepTree(root);
+            //st_temp = new StepTree(root);
 
             int value = Calculator.calIncreaseValue(_tmpChessTable, ref root);
 
             cal_count = 0;
-            think(ref root, root.row, root.col, root.color, value, step);
-            //think(root.row, root.col, root.color, ref root, ref st_temp, step);
+            cur_max_depth = depth;
 
-            return st_temp.selectBestPosition();
+            //极大极小值算法
+            //think(ref root, root.row, root.col, root.color, 0, depth);
+
+            //alphabeta算法
+            alphaBeta(ref root, root.row, root.col, root.color, 0, -0xfffffff, 0xfffffff, depth);
+
+            Logs.writeln("count = " + Droper.cal_count, 5);
             //st_temp.print();
+            return _bestPosition;
         }
 
-        public void setWinflg(int tempValue_t, ref int theBestValue_t, int next_color_t, ref bool win, ref bool fail)
+        private Stack<Position> _steps = new Stack<Position>();
+        public Stack<Position> steps
         {
-            if (next_color_t == Color.BLACK)
-            {
-                if (tempValue_t != (int)WinState.WHITE_WIN && tempValue_t > theBestValue_t)
-                {
-                    theBestValue_t = tempValue_t;
-                }
-            }
-            else if (next_color_t == Color.WHITE)
-            {
-                if (tempValue_t > theBestValue_t)
-                {
-                    theBestValue_t = tempValue_t;
-                }
-            }
-
-            if (tempValue_t != (int)WinState.BLACK_WIN)
-            {
-                win = false;
-            }
-            if (tempValue_t != (int)WinState.WHITE_WIN)
-            {
-                fail = false;
-            }
+            get { return _steps; }
         }
 
-        public void setWinflg2(ref Position currentPos, ref StepTree st, ref bool win ,ref bool fail)
-        {
-            if (win)
-            {
-                currentPos.win = (int)WinState.BLACK_WIN;
-                if (st.parent != null)
-                {
-                    st.parent.rootNode.haveWin = 1;
-                }
-            }
+        #region 极大极小值算法
 
-            if (fail)
-            {
-                currentPos.win = (int)WinState.WHITE_WIN;
-                if (st.parent != null)
-                {
-                    st.parent.rootNode.haveFail = 1;
-                }
-            }
-        }
-
+        public int cur_max_depth = 0;
         public static int cal_count = 0;
-
-        public int think(int row_t, int col_t, int color_t, ref Position currentPos, ref StepTree st, int depth)
+        public int think(ref Position currentPos, int row, int col, int color, int current_value, int depth)
         {
             cal_count++;
-            //st.rootNode.depth = depth;
-            //row_t = currentPos.row;
-            //col_t = currentPos.col;
-            //color_t = currentPos.color;
-            int next_color_t = (color_t == Color.BLACK) ? Color.WHITE : Color.BLACK;
-            bool win = true;
-            bool fail = true;
-            int tempValue_t = 0;
-            int theBestValue_t = -0xfffffff;
+
+            int next_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
+            int tempValue = 0;
+            int theBestValue = (next_color == _PCColor ? -0xfffffff : 0xfffffff);
 
             //保存棋子初始值, 并下这一步棋
-            //doStep(color_t, ref pStep);
-            int tmpColor = _tmpChessTable[row_t][col_t];
-            _tmpChessTable[row_t][col_t] = color_t;
+            int tmpColor = _tmpChessTable[row][col];
+            _tmpChessTable[row][col] = color;
 
             //如果胜负已分出，返回胜负值
-            int state_t = _rule.checkWinner(_tmpChessTable, row_t, col_t);
-            if (WinState.GAMING != state_t)
+            int state = _rule.checkWinner(_tmpChessTable, row, col);
+            if (WinState.GAMING != state)
             {
-                setWinflg(state_t, ref theBestValue_t, next_color_t, ref win, ref fail);
-                setWinflg2(ref currentPos, ref st, ref win, ref fail);
+                currentPos.total = (color == Color.BLACK ? WinState.BLACK_WIN : WinState.WHITE_WIN);
 
-                _tmpChessTable[row_t][col_t] = tmpColor;
-                //unDoStep(pStep);
-                return state_t;
+                _tmpChessTable[row][col] = tmpColor;
+                return currentPos.total;
             }
 
             //如果计算到了最后一步，返回计算值
             if (depth <= 0)
             {
-                int stepValue_t = 0;
-                stepValue_t = Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
-                stepValue_t += _BaseValueTable[row_t][col_t];
-
-                setWinflg(stepValue_t, ref theBestValue_t, next_color_t, ref win, ref fail);
-                setWinflg2(ref currentPos, ref st, ref win, ref fail);
-
-                _tmpChessTable[row_t][col_t] = tmpColor;
                 //unDoStep(pStep);
-                return stepValue_t;
-                //return Calculator.calIncreaseValue(_tmpChessTable, ref currentPos) + _BaseValueTable[row_t][col_t];
-            }
-
-            //得到可以落子的表
-            DropTable canDropTable = new DropTable();
-            calCanDrop(_tmpChessTable, next_color_t, canDropTable);
-
-            for (int pos = 0; pos < canDropTable.Length; pos++)
-            {
-                Position pDrop = canDropTable.getValue(pos);
-                if(pDrop.val == 0 || pDrop.alone)
+                //_steps.Pop();
+                Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
+                if (color == Color.BLACK)
                 {
-                    break;
-                }
-
-                //把这步棋加到树
-                StepTree childTree = new StepTree();
-                st.addChild(ref pDrop, ref childTree);
-
-                tempValue_t = think(pDrop.row, pDrop.col, pDrop.color, ref pDrop, ref childTree, depth - 1);
-
-                setWinflg(tempValue_t, ref theBestValue_t, next_color_t, ref win, ref fail);
-                //if (next_color_t == Color.BLACK)
-                //{
-                //    if (tempValue_t != (int)WinState.WHITE_WIN && tempValue_t > theBestValue_t)
-                //    {
-                //        theBestValue_t = tempValue_t;
-                //    }
-                //}
-                //else if (next_color_t == Color.WHITE)
-                //{
-                //    if (tempValue_t > theBestValue_t)
-                //    {
-                //        theBestValue_t = tempValue_t;
-                //    }
-                //}
-
-                //if (tempValue_t != (int)WinState.BLACK_WIN)
-                //{
-                //    win = false;
-                //}
-                //if (tempValue_t != (int)WinState.WHITE_WIN)
-                //{
-                //    fail = false;
-                //}
-
-                //if (tempValue_t == WinState.BLACK_WIN || tempValue_t == WinState.WHITE_WIN)
-                //{
-                //    break;
-                //}
-            }
-
-            setWinflg2(ref currentPos, ref st, ref win, ref fail);
-
-            //Logs.writeln("deep = " + depth + "\trow=" + currentPos.row + "\tcol=" + currentPos.col + "\tcolor=" + currentPos.color + "\tval=" + currentPos.val + "\twin=" + currentPos.win, 4);
-
-            _tmpChessTable[row_t][col_t] = tmpColor;
-            //unDoStep(pStep);
-
-            return theBestValue_t;
-        }
-
-        public int think(ref Position currentPos, int row_t, int col_t, int color_t, int value, int depth)
-        {
-            cal_count++;
-
-            int next_color_t = (color_t == Color.BLACK) ? Color.WHITE : Color.BLACK;
-            int tempValue_t = 0;
-            int theBestValue_t = -0xfffffff;
-
-            //保存棋子初始值, 并下这一步棋
-            int tmpColor = _tmpChessTable[row_t][col_t];
-            _tmpChessTable[row_t][col_t] = color_t;
-
-            //如果胜负已分出，返回胜负值
-            int state_t = _rule.checkWinner(_tmpChessTable, row_t, col_t);
-            if (WinState.GAMING != state_t)
-            {
-                _tmpChessTable[row_t][col_t] = tmpColor;
-                return state_t;
-            }
-
-            //如果计算到了最后一步，返回计算值
-            if (depth <= 0)
-            {
-                _tmpChessTable[row_t][col_t] = tmpColor;
-
-                if(color_t == _PCColor)
-                {
-                    return value + Calculator.calIncreaseValue(_tmpChessTable, ref currentPos) + _BaseValueTable[row_t][col_t];
+                    currentPos.total = current_value + currentPos.val + _BaseValueTable[row][col];
                 }
                 else
                 {
-                    return value - Calculator.calIncreaseValue(_tmpChessTable, ref currentPos) - _BaseValueTable[row_t][col_t];
+                    currentPos.total = current_value - currentPos.val - _BaseValueTable[row][col];
                 }
+                _tmpChessTable[row][col] = tmpColor;
+                return currentPos.total;
             }
 
             //得到可以落子的表
             DropTable canDropTable = new DropTable();
-            calCanDrop(_tmpChessTable, next_color_t, canDropTable);
+            calCanDrop(_tmpChessTable, next_color, canDropTable, Order.REVERSE);
 
-            for (int pos = 0; pos < canDropTable.Length; pos++)
+            if (next_color == Color.BLACK)
             {
-                Position pDrop = canDropTable.getValue(pos);
-                if (pDrop.val == 0 || pDrop.alone)
+                for (int pos = 0; pos < canDropTable.Length; pos++)
                 {
-                    break;
-                }
+                    Position pDrop = canDropTable.getValue(pos);
 
-                tempValue_t = think(ref pDrop, pDrop.row, pDrop.col, pDrop.color, value, depth - 1);
-
-                if(pDrop.color == _PCColor)
-                {
-                    if (tempValue_t == WinState.WHITE_WIN || tempValue_t == WinState.BLACK_WIN)
+                    tempValue = think(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, depth - 1);
+                    if (theBestValue < tempValue)
                     {
-                        theBestValue_t = tempValue_t;
+                        theBestValue = tempValue;
+                        if (depth == cur_max_depth)
+                        {
+                            _bestPosition = pDrop;
+                        }
                     }
-                    else if (value - tempValue_t < theBestValue_t)
+                    if (tempValue == WinState.BLACK_WIN)
                     {
-                        theBestValue_t = value - tempValue_t;
-                    }
-                }
-                else if(pDrop.color == Color.WHITE)
-                {
-                    if (tempValue_t == WinState.WHITE_WIN || tempValue_t == WinState.BLACK_WIN)
-                    {
-                        theBestValue_t = tempValue_t;
-                    }
-                    else if (value + tempValue_t > theBestValue_t)
-                    {
-                        theBestValue_t = value + tempValue_t;
+                        break;
                     }
                 }
-
-                if (tempValue_t == WinState.BLACK_WIN || tempValue_t == WinState.WHITE_WIN)
+            }
+            else
+            {
+                for (int pos = 0; pos < canDropTable.Length; pos++)
                 {
-                    break;
+                    Position pDrop = canDropTable.getValue(pos);
+
+                    tempValue = think(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, depth - 1);
+                    if (theBestValue > tempValue)
+                    {
+                        theBestValue = tempValue;
+                    }
+                    if (tempValue == WinState.WHITE_WIN)
+                    {
+                        break;
+                    }
                 }
             }
 
             //Logs.writeln("deep = " + depth + "\trow=" + currentPos.row + "\tcol=" + currentPos.col + "\tcolor=" + currentPos.color + "\tval=" + currentPos.val + "\twin=" + currentPos.win, 4);
 
-            _tmpChessTable[row_t][col_t] = tmpColor;
+            _tmpChessTable[row][col] = tmpColor;
 
-            return theBestValue_t;
+            return theBestValue;
         }
+
+        #endregion
+
+        #region alphabeta 剪枝算法
+
+        //public int cur_max_step = 0;
+        //public static int cal_count = 0;
+        public int alphaBeta(ref Position currentPos, int row, int col, int color, int current_value, int alhpa, int beta, int depth)
+        {
+            #region 初始化
+
+            cal_count++;
+            int next_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
+            int tempValue = 0;
+            int theBestValue = (next_color == _PCColor ? -0xfffffff : 0xfffffff);
+
+            #endregion
+
+            #region  保存棋子初始值, 并下这一步棋
+
+            int tmpColor = _tmpChessTable[row][col];
+            _tmpChessTable[row][col] = color;
+
+            #endregion
+
+            #region  如果胜负已分出，返回胜负值
+
+            int state = _rule.checkWinner(_tmpChessTable, row, col);
+            if (WinState.GAMING != state)
+            {
+                currentPos.total = (color == Color.BLACK ? WinState.BLACK_WIN : WinState.WHITE_WIN);
+                _tmpChessTable[row][col] = tmpColor;
+                return currentPos.total;
+            }
+
+            #endregion
+
+            #region  如果计算到了最后一步，返回计算值
+
+            if (depth <= 0)
+            {
+                //unDoStep(pStep);
+                //_steps.Pop();
+                Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
+                if (color == Color.BLACK)
+                {
+                    currentPos.total = current_value + currentPos.val + _BaseValueTable[row][col];
+                }
+                else
+                {
+                    currentPos.total = current_value - currentPos.val - _BaseValueTable[row][col];
+                }
+                _tmpChessTable[row][col] = tmpColor;
+                return currentPos.total;
+            }
+
+            #endregion
+
+            #region  得到可以落子的表
+
+            DropTable canDropTable = new DropTable();
+            calCanDrop(_tmpChessTable, next_color, canDropTable, Order.REVERSE);
+
+            #endregion
+
+            if(next_color == Color.BLACK)
+            {
+                for (int pos = 0; pos < canDropTable.Length; pos++)
+                {
+                    Position pDrop = canDropTable.getValue(pos);
+
+                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, alhpa, beta, depth - 1);
+
+                    if (alhpa < tempValue)
+                    {
+                        alhpa = tempValue;
+                        if (depth == cur_max_depth)
+                        {
+                            _bestPosition = pDrop;
+                        }
+                    }
+                    if (alhpa >= beta)
+                    {
+                        break;
+                    }
+                }
+                _tmpChessTable[row][col] = tmpColor;
+                return alhpa;
+            }
+            else
+            {
+                for (int pos = 0; pos < canDropTable.Length; pos++)
+                {
+                    Position pDrop = canDropTable.getValue(pos);
+
+                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, alhpa, beta, depth - 1);
+
+                    if (beta > tempValue)
+                    {
+                        beta = tempValue;
+                    }
+                    if (beta <= alhpa)
+                    {
+                        break;
+                    }
+                }
+                _tmpChessTable[row][col] = tmpColor;
+                return beta;
+            }
+        }
+
+        #endregion
+
+        #region 主递归调用2
 
         private void doStep(int color, ref Position pos)
         {
@@ -291,11 +272,148 @@ namespace Chess
             _tmpChessTable[pos.row][pos.col] = pos.color;
         }
 
+        public void setWinflg(int tempValue, ref int theBestValue, int next_color, ref bool win, ref bool fail)
+        {
+            if (next_color == Color.BLACK)
+            {
+                if (tempValue != (int)WinState.WHITE_WIN && tempValue > theBestValue)
+                {
+                    theBestValue = tempValue;
+                }
+            }
+            else if (next_color == Color.WHITE)
+            {
+                if (tempValue > theBestValue)
+                {
+                    theBestValue = tempValue;
+                }
+            }
+
+            if (tempValue != (int)WinState.BLACK_WIN)
+            {
+                win = false;
+            }
+            if (tempValue != (int)WinState.WHITE_WIN)
+            {
+                fail = false;
+            }
+        }
+
+        public void setWinflg2(ref Position currentPos, ref StepTree st, ref bool win, ref bool fail)
+        {
+            if (win)
+            {
+                currentPos.total = (int)WinState.BLACK_WIN;
+                if (st.parent != null)
+                {
+                    st.parent.rootNode.haveWin = 1;
+                }
+            }
+
+            if (fail)
+            {
+                currentPos.total = (int)WinState.WHITE_WIN;
+                if (st.parent != null)
+                {
+                    st.parent.rootNode.haveFail = 1;
+                }
+            }
+        }
+
+        private int row_t = 0;
+        private int col_t = 0;
+        private int color_t = 0;
+        private int next_color = 0;
+        private int state = 0;
+        private int stepValue_t = 0;
+
+        public int think(ref Position currentPos, ref StepTree st, int depth)
+        {
+            cal_count++;
+            //st.rootNode.depth = depth;
+            row_t = currentPos.row;
+            col_t = currentPos.col;
+            color_t = currentPos.color;
+            next_color = (color_t == Color.BLACK) ? Color.WHITE : Color.BLACK;
+
+            bool win = true;
+            bool fail = true;
+            int tempValue_t = 0;
+            int theBestValue_t = -0xfffffff;
+
+            //保存棋子初始值, 并下这一步棋
+            //doStep(color_t, ref pStep);
+            int tmpColor = _tmpChessTable[row_t][col_t];
+            _tmpChessTable[row_t][col_t] = color_t;
+
+            //如果胜负已分出，返回胜负值
+            state = _rule.checkWinner(_tmpChessTable, row_t, col_t);
+            if (WinState.GAMING != state)
+            {
+                setWinflg(state, ref theBestValue_t, next_color, ref win, ref fail);
+                setWinflg2(ref currentPos, ref st, ref win, ref fail);
+
+                _tmpChessTable[row_t][col_t] = tmpColor;
+                //unDoStep(pStep);
+                return state;
+            }
+
+            //如果计算到了最后一步，返回计算值
+            if (depth <= 0)
+            {
+                stepValue_t = Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
+                stepValue_t += _BaseValueTable[row_t][col_t];
+
+                setWinflg(stepValue_t, ref theBestValue_t, next_color, ref win, ref fail);
+                setWinflg2(ref currentPos, ref st, ref win, ref fail);
+
+                _tmpChessTable[row_t][col_t] = tmpColor;
+                //unDoStep(pStep);
+                return stepValue_t;
+            }
+
+            //得到可以落子的表
+            DropTable canDropTable = new DropTable();
+            calCanDrop(_tmpChessTable, next_color, canDropTable);
+
+            for (int pos = 0; pos < canDropTable.Length; pos++)
+            {
+                Position pDrop = canDropTable.getValue(pos);
+                if (pDrop.val == 0 || pDrop.alone)
+                {
+                    break;
+                }
+
+                //把这步棋加到树
+                StepTree childTree = new StepTree();
+                st.addChild(ref pDrop, ref childTree);
+
+                tempValue_t = think(ref pDrop, ref childTree, depth - 1);
+
+                setWinflg(tempValue_t, ref theBestValue_t, next_color, ref win, ref fail);
+
+                if (tempValue_t == WinState.BLACK_WIN || tempValue_t == WinState.WHITE_WIN)
+                {
+                    break;
+                }
+            }
+
+            setWinflg2(ref currentPos, ref st, ref win, ref fail);
+
+            //Logs.writeln("deep = " + depth + "\trow=" + currentPos.row + "\tcol=" + currentPos.col + "\tcolor=" + currentPos.color + "\tval=" + currentPos.val + "\twin=" + currentPos.win, 4);
+
+            _tmpChessTable[row_t][col_t] = tmpColor;
+            //unDoStep(pStep);
+
+            return theBestValue_t;
+        }
+
+        #endregion
+
         public void setPCColor(int color)
         {
             _PCColor = color;
-
-            _PLColor = color == Color.BLACK ? Color.WHITE : Color.BLACK;
+            _PLColor = (_PCColor == Color.BLACK ?Color.WHITE : Color.BLACK); 
         }
 
         public void copyBoard(int [][]data)
@@ -310,12 +428,11 @@ namespace Chess
             }
         }
 
-
         #region 计算可以落子的地方
 
         int tmp_color = 0;
         Position dropP = null;
-        public void calCanDrop(int[][] curColorTable, int color, DropTable canDropTable)
+        public void calCanDrop(int[][] curColorTable, int color, DropTable canDropTable, int order = Order.REVERSE)
         {
             tmp_color = 0;
             for (int r = 0; r <= Side.ROW_ID; r++)
@@ -338,10 +455,18 @@ namespace Chess
                     //还原走过的棋
                     curColorTable[r][c] = tmp_color;
 
-                    canDropTable.addPosition(ref dropP);
+                    if (order == Order.REVERSE)
+                    {
+                        canDropTable.addPositionReverse(ref dropP);
+                    }
+                    else
+                    {
+                        canDropTable.addPositionPositive(ref dropP);
+                    }
                 }
             }
-            //canDropTable.print();
+            //if (color == Color.BLACK)
+            //    canDropTable.print();
         }
         #endregion
 
@@ -352,6 +477,7 @@ namespace Chess
 
         private int _PCColor = Color.NONE;
         private int _PLColor = Color.NONE;
+        
         //估值表
         public int[][] _BaseValueTable =
         {

@@ -21,6 +21,14 @@ namespace Chess
         public const int WHITE = 2;
     }
 
+    public class Order
+    {
+        //升序
+        public const int POSITIVE = 1;
+        //降序
+        public const int REVERSE = 2;
+    }
+
     public class Side
     {
         public const int ROW = 15;
@@ -57,7 +65,7 @@ namespace Chess
         //黑胜
         public const int BLACK_WIN = 100000;
         //白胜
-        public const int WHITE_WIN = -100001;
+        public const int WHITE_WIN = -100000;
     }
 
     //棋型的价值
@@ -166,7 +174,7 @@ namespace Chess
             _col = col > Side.COL_ID ? Side.COL_ID : col;
             _col = _col < 0 ? 0 : _col;
             _color = color;
-            _value = value;
+            _increaseValue = value;
         }
 
         private int _row;
@@ -189,11 +197,11 @@ namespace Chess
                 _col = _col < 0 ? 0 : _col;
             }
         }
-        private int _value;
+        private int _increaseValue;
         public int val
         {
-            get { return _value; }
-            set { _value = value; }
+            get { return _increaseValue; }
+            set { _increaseValue = value; }
         }
         private int _color;
         public int color
@@ -201,11 +209,11 @@ namespace Chess
             get { return _color; }
             set { _color = value; }
         }
-        private int _winValue;
-        public int win
+        private int _totalValue;
+        public int total
         {
-            get { return _winValue; }
-            set { _winValue = value; }
+            get { return _totalValue; }
+            set { _totalValue = value; }
         }
         private int _depth;
         public int depth
@@ -237,9 +245,9 @@ namespace Chess
 
         public void reset(Position pos)
         {
-            reset(pos._row, pos._col, pos._color, pos._value, pos.win, pos.depth, pos._haveFail, pos.haveWin, pos.alone);
+            reset(pos._row, pos._col, pos._color, pos._increaseValue, pos.total, pos.depth, pos._haveFail, pos.haveWin, pos.alone);
         }
-        public void reset(int row = 0, int col = 0, int color = 0, int value = 0, int winValue = 0,
+        public void reset(int row = 0, int col = 0, int color = 0, int increaseValue = 0, int totalValue = 0,
             int depth = 0, int haveFaile = -1, int haveWin = -1, bool alone = false)
         {
             _row = row > Side.ROW_ID ? Side.ROW_ID : row;
@@ -247,9 +255,10 @@ namespace Chess
 
             _col = col > Side.COL_ID ? Side.COL_ID : col;
             _col = _col < 0 ? 0 : _col;
+
             _color = color;
-            _value = value;
-            _winValue = winValue;
+            _increaseValue = increaseValue;
+            _totalValue = totalValue;
             _depth = depth;
             _haveFail = haveFaile;
             _haveWin = haveWin;

@@ -39,7 +39,7 @@ namespace Chess
             Logs.writeln("count = " + Droper.cal_count, 4);
             foreach (var node in _tree)
             {
-                if(_priority <= 5 && node.Value.rootNode.win == (int)WinState.BLACK_WIN )
+                if(_priority <= 5 && node.Value.rootNode.total == (int)WinState.BLACK_WIN )
                 {
                     if(_bestPosition.val != (int)WinState.BLACK_WIN)
                     {
@@ -50,7 +50,7 @@ namespace Chess
                         _bestPosition.reset(node.Value.rootNode);
                     }
                     _priority = 5;
-                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
+                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.total, 4);
                 }
                 else if (_priority <= 4 && node.Value.rootNode.haveFail != 1)
                 {
@@ -66,7 +66,7 @@ namespace Chess
                         _bestPosition.reset(node.Value.rootNode);
                     }
                      _priority = 4;
-                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
+                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.total, 4);
                 }
                 else if (_priority <= 3 && node.Value.rootNode.haveWin == 1)
                 {
@@ -79,7 +79,7 @@ namespace Chess
                         _bestPosition.reset(node.Value.rootNode);
                     }
                      _priority = 3;
-                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
+                    Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.total, 4);
                 }
                 else if(_priority <= 1)
                 {
@@ -88,7 +88,7 @@ namespace Chess
                     {
                         _bestPosition.reset(node.Value.rootNode);
                         _priority = 1;
-                        Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.win, 4);
+                        Logs.writeln("_priority=" + _priority + "\tval=" + _bestPosition.val + "\tdeep = " + _bestPosition.depth + "\trow=" + _bestPosition.row + "\tcol=" + _bestPosition.col + "\tcolor=" + _bestPosition.color + "\twin=" + _bestPosition.total, 4);
                     }
                 }
             }
@@ -97,7 +97,7 @@ namespace Chess
 
         public void print()
         {
-            Logs.writeln("deep = " + _position.depth + "\trow=" + _position.row + "\tcol=" + _position.col + "\tcolor=" + _position.color + "\twin=" + _position.win, 4);// "\tval=" + _position.val +
+            Logs.writeln("deep = " + _position.depth + "\trow=" + _position.row + "\tcol=" + _position.col + "\tcolor=" + _position.color + "\twin=" + _position.total, 4);// "\tval=" + _position.val +
             foreach (var node in _tree)
             {
                 node.Value.print();

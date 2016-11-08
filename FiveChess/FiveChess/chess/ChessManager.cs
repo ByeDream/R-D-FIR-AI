@@ -109,12 +109,6 @@ namespace Chess
 
         public void PlayChess(int row, int col)
         {
-            int color = CurrentPlayer.color;
-
-            _chessboard.setData(row, col, color);
-
-            Position p = _droper.thinkNext(_chessboard.Data, color, row, col, 3);
-
             int state = rule.checkWinner(_chessboard.Data, row, col);
 
             switch (state)
@@ -128,6 +122,8 @@ namespace Chess
                 default:
                     break;
             }
+
+            Position p = _droper.think(_chessboard.Data, CurrentPlayer.color, row, col, 4);
 
             _chessboard.setData(p.row, p.col, p.color);
 
