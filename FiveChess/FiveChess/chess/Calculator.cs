@@ -36,7 +36,6 @@ namespace Gobang
                     continue;
                 if (r > Side.ROW_ID)
                     break;
-                Logs.writeln(" row = " + r);
                 if (color == data[r][col])
                 {
                     value_count++;
@@ -67,7 +66,6 @@ namespace Gobang
                     continue;
                 if (c > Side.COL_ID)
                     break;
-                Logs.writeln(" col = " + c);
                 if (color == data[row][c])
                 {
                     value_count++;
@@ -99,7 +97,6 @@ namespace Gobang
                     continue;
                 if (r > Side.ROW_ID || c > Side.COL_ID)
                     break;
-                Logs.writeln("col = " + c + " row = " + r);
                 if (color == data[r][c])
                 {
                     value_count++;
@@ -127,11 +124,10 @@ namespace Gobang
 
             for (int r = endRow, c = beginCol; r >= beginRow && c <= endCol; r--, c++)
             {
-                if (r < 0 || c < 0)
+                if (r > Side.ROW_ID || c < 0)
                     continue;
-                if (r > Side.ROW_ID || c > Side.COL_ID)
+                if (r < 0 || c > Side.COL_ID)
                     break;
-                Logs.writeln("col = " + c + " row = " + r);
                 if (color == data[r][c])
                 {
                     value_count++;
@@ -1503,7 +1499,7 @@ namespace Gobang
         private static int cost_h = 0;
         private static int cost_lt = 0;
         private static int cost_lb = 0;
-        public static int calIncreaseValue(int[][] data, ref Position p)
+        public static int calStepValue(int[][] data, ref Position p)
         {
             color = p.color;
             row = p.row;
@@ -1585,5 +1581,86 @@ namespace Gobang
         }
         #endregion
 
-     }
+        public static int calValue(int[][] data, ref Position p)
+        {
+            color = p.color;
+            row = p.row;
+            col = p.col;
+            //是否是独子
+            #region 水平增量
+            {
+                line_h.clear();
+                line_h_min.clear();
+                line_h_max.clear();
+
+                calHorizontalCount(data, row, col, ref line_h);
+
+                //计算是否有不连续的棋
+                calHorizontalLine(data, color, line_h, ref line_h_min, ref line_h_max);
+
+                cost_h = calUnSequentialLineCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
+            }
+            #endregion
+
+            #region 垂直增量
+            {
+                line_v.clear();
+                line_v_min.clear();
+                line_v_max.clear();
+
+                calVerticalCount(data, row, col, ref line_v);
+
+                //计算是否有不连续的棋
+                calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
+
+                cost_v = calUnSequentialLineCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
+            }
+            #endregion
+
+            #region 左上到右下
+            {
+                line_lt.clear();
+                line_lt_min.clear();
+                line_lt_max.clear();
+
+                calInclinedCount_LT(data, row, col, ref line_lt);
+
+                //计算是否有不连续的棋
+                calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
+
+                cost_lt = calUnSequentialLineCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
+            }
+            #endregion
+
+            #region 坐下到右上
+            {
+                line_lb.clear();
+                line_lb_min.clear();
+                line_lb_max.clear();
+
+                calInclinedCount_LB(data, row, col, ref line_lb);
+
+                //计算是否有不连续的棋
+                calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
+
+                cost_lb = calUnSequentialLineCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
+            }
+            #endregion
+
+            p.val += cost_h + cost_v + cost_lt + cost_lb;
+
+            if (line_v.length == 1 && line_h.length == 1 && line_lb.length == 1 && line_lt.length == 1
+                && line_h_max.length == 0 && line_h_min.length == 0 && line_v_max.length == 0 && line_v_min.length == 0
+                && line_lt_max.length == 0 && line_lt_min.length == 0 && line_lb_max.length == 0 && line_lb_min.length == 0)
+            {
+                //这里强行把值设为0，防止排序的时候出错
+                p.val = 0;
+                p.alone = true;
+            }
+
+            //Logs.writeln("cost=" + p.val, 4);
+            return p.val;
+        }
+
+    }
 }

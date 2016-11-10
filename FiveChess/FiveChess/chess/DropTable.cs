@@ -5,6 +5,178 @@ using System.Text;
 
 namespace Gobang
 {
+    #region 落子表，自定义链表结构
+
+    public class DropPosition
+    {
+        public DropPosition() { }
+        public DropPosition(Position p)
+        {
+            this.p = p;
+        }
+
+        public void reset()
+        {
+            next = null;
+            //prev = null;
+            p.reset();
+        }
+
+        public void reset(Position p)
+        {
+            next = null;
+            //prev = null;
+            this.p.reset(p);
+        }
+
+        public Position p = new Position();
+
+        //public DropPosition prev;
+        public DropPosition next;
+        public int index = 0;
+    }
+
+    public class DropTableArry
+    {
+        public DropTableArry()
+        {
+            _data = new DropPosition[Side.ROW * Side.COL];
+            for (int i = 0; i < Side.ROW * Side.COL; i++)
+            {
+                _data[i] = new DropPosition();
+                _data[i].index = i;
+            }
+            _head = _data[0];
+            //_end = _data[0];
+            //DropPositionIdx = new int[Side.ROW * Side.COL];
+        }
+
+        public void clear()
+        {
+            _head = _data[0];
+            _head.reset();
+            _curIdx = 0;
+        }
+
+        private DropPosition add_front = null;
+        private DropPosition add_next = null;
+        public void addPositionReverse(ref Position pos)
+        {
+            if (pos.val == 0)
+            {
+                return;
+            }
+            if (pos.alone)
+            {
+                //_ddata[_length].p.reset(pos);
+                return;
+            }
+            
+            _data[_curIdx].reset(pos);
+
+            add_front = null;
+            add_next = _head;
+
+            while (add_next != null && pos.val < add_next.p.val)
+            {
+                add_front = add_next;
+                add_next = add_next.next;
+            }
+
+            if(add_front != null)
+            {
+                add_front.next = _data[_curIdx];
+            }
+            if( add_next != null && _curIdx != add_next.index)
+            {
+                _data[_curIdx].next = add_next;
+                if (_head == add_next)
+                {
+                    _head = _data[_curIdx];
+                }
+            }
+
+            _curIdx++;
+        }
+
+        public void addPositionPositive(ref Position pos)
+        {
+            if (pos.val == 0)
+            {
+                return;
+            }
+            if (pos.alone)
+            {
+                return;
+            }
+
+            _data[_curIdx].p.reset(pos);
+
+            add_front = null;
+            add_next = _head;
+
+            while (add_next != null && pos.val > add_next.p.val)
+            {
+                add_front = add_next;
+                add_next = add_next.next;
+            }
+
+            if (add_front != null)
+            {
+                add_front.next = _data[_curIdx];
+            }
+            if (add_next != null && _curIdx != add_next.index)
+            {
+                _data[_curIdx].next = add_next;
+                if (_head == add_next)
+                {
+                    _head = _data[_curIdx];
+                }
+            }
+
+            _curIdx++;
+        }
+
+        public void print()
+        {
+            DropPosition p = _head;
+            int count = 0;
+            while ( p != null )
+            {
+                Logs.writeln("p.row=" + p.p.row + " \tp.col=" + p.p.col + " \tp.val=" + p.p.val + " \tp.color=" + p.p.color + " \tindex="+p.index, 4);
+                p = p.next;
+                count++;
+            }
+
+            Logs.writeln("length = " + Length + "\tcount=" + count, 4);
+        }
+
+        private int _curIdx = 0;
+        public int Length
+        {
+            get { return _curIdx; }
+        }
+
+        private DropPosition _head;
+        public DropPosition getFront()
+        {
+            return _head;
+        }
+
+        //public DropPosition getEnd()
+        //{
+        //    return _end;
+        //}
+
+        //private DropPosition _end;
+        private DropPosition[] _data;
+
+    }
+
+    #endregion
+
+
+    #region 可以落子的表, 用链表做数据
     public class DropTable
     {
         public DropTable()
@@ -183,4 +355,6 @@ namespace Gobang
 
         private List<Position> _data;
     }
+
+    #endregion
 }

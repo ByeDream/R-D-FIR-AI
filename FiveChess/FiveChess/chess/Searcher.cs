@@ -20,30 +20,45 @@ namespace Gobang
         }
 
 
+        //当前最大搜索深度
+        public int cur_max_depth = 0;
+        //计算次数
+        public static int cal_count = 0;
         //private StepTree st_temp = null;
+        //最佳的落子
         private Position _bestPosition = null;
+
         public Position think(int [][]data, int color, int row, int col, int depth)
         {
             copyBoard(data);
 
+            _dropArry = new DropTableArry[depth];
+            for(int i = 0; i < _dropArry.Length; i++)
+            {
+                _dropArry[i] = new DropTableArry();
+            }
+
             Position root = new Position(row, col, color);
             //st_temp = new StepTree(root);
 
-            int value = Calculator.calIncreaseValue(_tmpChessTable, ref root);
-            _pawnSum++;
-
-            _curPawnSum = _pawnSum;
             cal_count = 0;
             cur_max_depth = depth;
+
+            //这里多算了一步棋
+            _curPawnSum--;
+            _replaceTable.getHashValue64(data);
+            _replaceTable.getHashValue32(data);
+
+            DateTime dt_begin = DateTime.Now;
 
             //极大极小值算法
             //minMax(ref root, root.row, root.col, root.color, 0, depth);
 
-            DateTime dt_begin = DateTime.Now;
-
-            int a = DateTime.Now.Millisecond;
-            //alphabeta算法
+            //alphabeta 剪枝算法
             alphaBeta(ref root, root.row, root.col, root.color, 0, -0xfffffff, 0xfffffff, depth);
+
+            //alphabeta 剪枝算法 + 置换表
+            //alphaBetaHash(ref root, root.row, root.col, root.color, 0, -0xfffffff, 0xfffffff, depth);
 
             DateTime dt_end = DateTime.Now;
 
@@ -63,8 +78,6 @@ namespace Gobang
 
         #region 极大极小值算法
 
-        public int cur_max_depth = 0;
-        public static int cal_count = 0;
         public int minMax(ref Position currentPos, int row, int col, int color, int current_value, int depth)
         {
             cal_count++;
@@ -92,7 +105,7 @@ namespace Gobang
             {
                 //unDoStep(pStep);
                 //_steps.Pop();
-                Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
+                Calculator.calStepValue(_tmpChessTable, ref currentPos);
                 if (color == Color.BLACK)
                 {
                     currentPos.total = current_value + currentPos.val + _BaseValueTable[row][col];
@@ -159,11 +172,7 @@ namespace Gobang
 
         #region alphabeta 剪枝算法
 
-
         private int _curPawnSum = 0;
-        private long time = 0;
-        //public int cur_max_step = 0;
-        //public static int cal_count = 0;
         public int alphaBeta(ref Position currentPos, int row, int col, int color, int current_value, int alpha, int beta, int depth)
         {
             cal_count++;
@@ -201,17 +210,11 @@ namespace Gobang
 
             #region  如果计算到了最后一步，返回计算值
 
-            int total = _replaceTable.LookupHashTable(alpha, beta, _curPawnSum, color);
-            if(total != WinState.INVALIDE)
-            {
-                return total;
-            }
-
             if (depth <= 0)
             {
                 //unDoStep(pStep);
                 //_steps.Pop();
-                Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
+                Calculator.calStepValue(_tmpChessTable, ref currentPos);
                 if (color == Color.BLACK)
                 {
                     currentPos.total = current_value + currentPos.val + _BaseValueTable[row][col];
@@ -220,8 +223,6 @@ namespace Gobang
                 {
                     currentPos.total = current_value - currentPos.val - _BaseValueTable[row][col];
                 }
-
-                _replaceTable.Insert(_pawnSum, HashItem.type_value, currentPos.total, _tmpChessTable[row][col]);
 
                 //还原棋盘
                 _tmpChessTable[row][col] = tmpColor;
@@ -289,6 +290,143 @@ namespace Gobang
 
         #endregion
 
+        #region alphabeta 剪枝算法 + hash置换表
+
+        private DropTableArry[] _dropArry;
+        public int alphaBetaHash(ref Position currentPos, int row, int col, int color, int current_value, int alpha, int beta, int depth)
+        {
+            cal_count++;
+
+            #region 初始化
+
+            int next_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
+            int tempValue = 0;
+            int theBestValue = (next_color == _PCColor ? -0xfffffff : 0xfffffff);
+
+            #endregion
+
+            #region  保存棋子初始值, 并下这一步棋
+
+            _tmpChessTable[row][col] = color;
+            _replaceTable.DoStep(row,col, color);
+            _curPawnSum++;
+
+            #endregion
+
+            #region  如果胜负已分出，返回胜负值
+
+            int state = _rule.checkWinner(_tmpChessTable, color, row, col);
+            if (WinState.GAMING != state)
+            {
+                currentPos.total = (color == Color.BLACK ? WinState.BLACK_WIN : WinState.WHITE_WIN);
+
+                _tmpChessTable[row][col] = 0;
+                _replaceTable.UnDoStep(row, col, color);
+                _curPawnSum--;
+
+                return currentPos.total;
+            }
+
+            #endregion
+
+            #region  如果计算到了最后一步，返回计算值
+
+            int total = _replaceTable.LookupHashTable(alpha, beta, _curPawnSum, color);
+            if (total != WinState.INVALIDE)
+            {
+                return total;
+            }
+
+            if (depth <= 0)
+            {
+                Calculator.calStepValue(_tmpChessTable, ref currentPos);
+                if (color == Color.BLACK)
+                {
+                    currentPos.total = current_value + currentPos.val + _BaseValueTable[row][col];
+                }
+                else
+                {
+                    currentPos.total = current_value - currentPos.val - _BaseValueTable[row][col];
+                }
+
+                _replaceTable.Insert(_pawnSum, HashItem.type_value, currentPos.total, _tmpChessTable[row][col]);
+
+                //还原棋盘
+                _tmpChessTable[row][col] = 0;
+                _replaceTable.UnDoStep(row, col, color);
+                _curPawnSum--;
+
+                return currentPos.total;
+            }
+
+            #endregion
+
+            #region  得到可以落子的表
+
+            calCanDropArry(_tmpChessTable, next_color, _dropArry[depth - 1], Order.REVERSE);
+
+            #endregion
+
+            if (next_color == Color.BLACK)
+            {
+                DropPosition pDropp = _dropArry[depth - 1].getFront();
+                while(pDropp != null)
+                {
+                    Position pDrop = pDropp.p;
+                    tempValue = alphaBetaHash(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, alpha, beta, depth - 1);
+
+                    if (alpha < tempValue)
+                    {
+                        alpha = tempValue;
+                        if (depth == cur_max_depth)
+                        {
+                            _bestPosition = pDrop;
+                        }
+                    }
+                    if (alpha >= beta)
+                    {
+                        break;
+                    }
+                    pDropp = pDropp.next;
+                }
+
+                //还原棋盘
+                _tmpChessTable[row][col] = 0;
+                _replaceTable.UnDoStep(row, col, color);
+                _curPawnSum--;
+
+                return alpha;
+            }
+            else
+            {
+                DropPosition pDropp = _dropArry[depth - 1].getFront();
+                while (pDropp != null)
+                {
+                    Position pDrop = pDropp.p;
+                    tempValue = alphaBetaHash(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, alpha, beta, depth - 1);
+
+                    if (beta > tempValue)
+                    {
+                        beta = tempValue;
+                    }
+                    if (beta <= alpha)
+                    {
+                        break;
+                    }
+                    pDropp = pDropp.next;
+                }
+
+                //还原棋盘
+                _tmpChessTable[row][col] = 0;
+                _replaceTable.UnDoStep(row, col, color);
+                _curPawnSum--;
+
+                return beta;
+            }
+        }
+
+        #endregion
+
         public void setPCColor(int color)
         {
             _PCColor = color;
@@ -311,15 +449,14 @@ namespace Gobang
                     }
                 }
             }
+            _curPawnSum = _pawnSum;
         }
 
         #region 计算可以落子的地方
 
-        int tmp_color = 0;
-        Position dropP = null;
+        Position dropP = new Position();
         public void calCanDrop(int[][] curColorTable, int color, DropTable canDropTable, int order = Order.REVERSE)
         {
-            tmp_color = 0;
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
                 for (int c = 0; c <= Side.COL_ID; c++)
@@ -331,14 +468,14 @@ namespace Gobang
                     }
 
                     //假设落子,计算落子之后, 这一步棋的价值
-                    tmp_color = curColorTable[r][c];
                     curColorTable[r][c] = color;
 
                     dropP = new Position(r, c, color, _BaseValueTable[r][c]);
-                    Calculator.calIncreaseValue(curColorTable, ref dropP);
+                    //dropP.reset(r, c, color, _BaseValueTable[r][c]);
+                    Calculator.calStepValue(curColorTable, ref dropP);
 
                     //还原走过的棋
-                    curColorTable[r][c] = tmp_color;
+                    curColorTable[r][c] = 0;
 
                     if (order == Order.REVERSE)
                     {
@@ -353,6 +490,42 @@ namespace Gobang
             //if (color == Color.BLACK)
             //    canDropTable.print();
         }
+
+        public void calCanDropArry(int[][] curColorTable, int color, DropTableArry canDropTable, int order = Order.REVERSE)
+        {
+            canDropTable.clear();
+            for (int r = 0; r <= Side.ROW_ID; r++)
+            {
+                for (int c = 0; c <= Side.COL_ID; c++)
+                {
+                    //如果已经有棋子存在，不能落子, 设为0值
+                    if (curColorTable[r][c] != Color.NONE)
+                    {
+                        continue;
+                    }
+
+                    //假设落子,计算落子之后, 这一步棋的价值
+                    curColorTable[r][c] = color;
+
+                    dropP.reset(r, c, color, _BaseValueTable[r][c]);
+                    Calculator.calStepValue(curColorTable, ref dropP);
+
+                    //还原走过的棋
+                    curColorTable[r][c] = 0;
+
+                    if (order == Order.REVERSE)
+                    {
+                        canDropTable.addPositionReverse(ref dropP);
+                    }
+                    else
+                    {
+                        canDropTable.addPositionPositive(ref dropP);
+                    }
+                }
+            }
+            //canDropTable.print();
+        }
+
         #endregion
 
 

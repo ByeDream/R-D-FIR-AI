@@ -123,7 +123,7 @@ namespace Gobang
                     break;
             }
 
-            Position p = _droper.think(_chessboard.Data, CurrentPlayer.color, row, col, 4);
+            Position p = _droper.think(_chessboard.Data, CurrentPlayer.color, row, col, 5);
 
             _chessboard.setData(p.row, p.col, p.color);
 

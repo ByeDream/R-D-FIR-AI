@@ -52,7 +52,7 @@ namespace Gobang
             for(int i = 0; i < 2; i++)
             {
                 _hashItemTable[i] = new HashItem[HASH_ITEM_SIZE];
-                for(int j = 0; j <2; j++)
+                for(int j = 0; j < HASH_ITEM_SIZE; j++)
                 {
                     _hashItemTable[i][j] = new HashItem();
                 }
@@ -64,7 +64,7 @@ namespace Gobang
         public int LookupHashTable(int alpha, int beta, int PawnSum, int TableNo)
         {
             x = (_hashKey32 & HASH_ITEM_SIZE);
-            ht = _hashItemTable[TableNo][x];
+            ht = _hashItemTable[TableNo - 1][x];
 
             if(ht.checkSum == _hashKey64 && ht.PawnSum == PawnSum)
             {
@@ -92,12 +92,24 @@ namespace Gobang
         public void Insert(int pawnSum, int type, int value, int TableNo)
         {
             x = (_hashKey32 & HASH_ITEM_SIZE);
-            ht = _hashItemTable[TableNo][x];
+            ht = _hashItemTable[TableNo - 1][x];
 
             ht.checkSum = _hashKey64;
             ht.PawnSum = pawnSum;
             ht.type = type;
             ht.value = value;
+        }
+
+        public void DoStep(int row, int col, int color)
+        {
+            _hashKey32 ^= _hashtable32[color - 1][row][col];
+            _hashKey64 ^= _hashtable64[color - 1][row][col];
+        }
+
+        public void UnDoStep(int row, int col, int color)
+        {
+            _hashKey32 ^= _hashtable32[color - 1][row][col];
+            _hashKey64 ^= _hashtable64[color - 1][row][col];
         }
 
         public void getHashValue64(int[][] data)
@@ -109,7 +121,7 @@ namespace Gobang
                     int color = data[row][col];
                     if(color != 0)
                     {
-                        _hashKey64 ^= _hashtable64[color] [row] [col];
+                        _hashKey64 ^= _hashtable64[color - 1] [row] [col];
                     }
                 }
             }
@@ -124,7 +136,7 @@ namespace Gobang
                     int color = data[row][col];
                     if (color != 0)
                     {
-                        _hashKey32 ^= _hashtable32[data[row][col]][row][col];
+                        _hashKey32 ^= _hashtable32[color - 1][row][col];
                     }
                 }
             }
