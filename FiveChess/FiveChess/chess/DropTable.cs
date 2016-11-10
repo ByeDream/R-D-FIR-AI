@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess
+namespace Gobang
 {
     public class DropTable
     {
         public DropTable()
         {
-            _data = new List<Position>();
+            _data = new List<Position>(150);
             //_Table = new Position[Side.COL * Side.ROW];
             //for (int i = 0; i < _Table.Length; i++)
             //{
@@ -98,6 +98,8 @@ namespace Chess
             {
                 _data.Insert(mid, pos);
             }
+
+            //Logs.writeln("Droptable capacity = " + _data.Capacity, 4);
         }
 
         public void addPositionPositive(ref Position pos)

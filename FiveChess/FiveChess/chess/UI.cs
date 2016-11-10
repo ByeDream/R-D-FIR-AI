@@ -6,7 +6,7 @@ using System.Text;
 
 using FiveChess;
 
-namespace Chess
+namespace Gobang
 {
     class UI
     {
@@ -48,8 +48,8 @@ namespace Chess
         private Image white_chess = null;
         private Image black_chess = null;
 
-        private  ChessBoard _chb  = null;
-        public ChessBoard chessboard
+        private  Pawns _chb  = null;
+        public Pawns chessboard
         {
             set { _chb = value; }
         }

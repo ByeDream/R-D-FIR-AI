@@ -45,20 +45,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="chess\Calculator.cs" />
-    <Compile Include="chess\ChessBoard.cs" />
+    <Compile Include="chess\Pawns.cs" />
     <Compile Include="ChessForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="ChessForm.Designer.cs">
       <DependentUpon>ChessForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="chess\ChessManager.cs" />
+    <Compile Include="chess\GameManager.cs" />
     <Compile Include="chess\Common.cs" />
-    <Compile Include="chess\Droper.cs" />
     <Compile Include="chess\DropTable.cs" />
     <Compile Include="chess\Logs.cs" />
     <Compile Include="chess\Player.cs" />
+    <Compile Include="chess\ReplaceTable.cs" />
     <Compile Include="chess\Rule.cs" />
+    <Compile Include="chess\Searcher.cs" />
     <Compile Include="chess\StepTree.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

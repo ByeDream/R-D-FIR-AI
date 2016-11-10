@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess
+namespace Gobang
 {
     class Calculator
     {
@@ -25,11 +25,10 @@ namespace Chess
 
         #region check if have N count in a line
 
-        public static int hasVerticalCount(int[][] data, int color, int count, int row, int col, out LineType type)
+        public static int hasVerticalCount(int[][] data, int color, int count, int row, int col)
         {
             int beginRow = row - (count - 1), endRow = row + (count - 1);
             int value_count = 0;
-            type = 0;
 
             for (int r = beginRow; r <= endRow; r++)
             {
@@ -57,11 +56,10 @@ namespace Chess
             return value_count;
         }
 
-        public static int hasHorizontalCount(int[][] data, int color, int count, int row, int col, out LineType type)
+        public static int hasHorizontalCount(int[][] data, int color, int count, int row, int col)
         {
             int beginCol = col - (count - 1), endCol = col + (count - 1);
             int value_count = 0;
-            type = 0;
 
             for (int c = beginCol; c <= endCol; c++)
             {
@@ -89,25 +87,11 @@ namespace Chess
             return value_count;
         }
 
-        /// <summary>
-        /// Check line count from left top to right bottom
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="color"></param>
-        /// <param name="count"></param>
-        /// <param name="beginRow"></param>
-        /// <param name="endRow"></param>
-        /// <param name="beginCol"></param>
-        /// <param name="endCol"></param>
-        /// <param name="targetCol"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static int hasInclinedCount_LT(int[][] data, int color, int count, int row, int col, out LineType type)
+        public static int hasInclinedCount_LT(int[][] data, int color, int count, int row, int col)
         {
             int beginCol = col - (count - 1), endCol = col + (count - 1);
             int beginRow = row - (count - 1), endRow = row + (count - 1);
             int value_count = 0;
-            type = 0;
 
             for (int r = beginRow, c = beginCol; r <= endRow && c <= endCol; r++, c++)
             {
@@ -135,25 +119,11 @@ namespace Chess
             return value_count;
         }
 
-        /// <summary>
-        /// Check line count from left bottom to right top
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="color"></param>
-        /// <param name="count"></param>
-        /// <param name="beginRow"></param>
-        /// <param name="endRow"></param>
-        /// <param name="beginCol"></param>
-        /// <param name="endCol"></param>
-        /// <param name="targetCol"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
-        public static int hasInclinedCount_LB(int[][] data, int color, int count, int row, int col, out LineType type)
+        public static int hasInclinedCount_LB(int[][] data, int color, int count, int row, int col)
         {
             int beginCol = col - (count - 1), endCol = col + (count - 1);
             int beginRow = row - (count - 1), endRow = row + (count - 1);
             int value_count = 0;
-            type = 0;
 
             for (int r = endRow, c = beginCol; r >= beginRow && c <= endCol; r--, c++)
             {

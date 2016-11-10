@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess
+namespace Gobang
 {
-    public class ChessBoard
+    public class Pawns
     {
-        public ChessBoard()
+        public Pawns()
         {
             //_data = new int[Side.ROW][];
             //for( int i = 0; i < Side.ROW; i++)
@@ -23,9 +23,9 @@ namespace Chess
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-                new int[]{ 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0},
-                new int[]{ 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0},
-                new int[]{ 0, 0, 0, 0, 0, 0, 2, 1, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+                new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
                 new int[]{ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},

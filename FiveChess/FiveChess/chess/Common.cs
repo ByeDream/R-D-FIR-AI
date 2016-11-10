@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess
+namespace Gobang
 {
     public class Con
     {
@@ -66,6 +66,8 @@ namespace Chess
         public const int BLACK_WIN = 100000;
         //白胜
         public const int WHITE_WIN = -100000;
+
+        public const int INVALIDE = 123456789;
     }
 
     //棋型的价值
@@ -247,6 +249,7 @@ namespace Chess
         {
             reset(pos._row, pos._col, pos._color, pos._increaseValue, pos.total, pos.depth, pos._haveFail, pos.haveWin, pos.alone);
         }
+
         public void reset(int row = 0, int col = 0, int color = 0, int increaseValue = 0, int totalValue = 0,
             int depth = 0, int haveFaile = -1, int haveWin = -1, bool alone = false)
         {

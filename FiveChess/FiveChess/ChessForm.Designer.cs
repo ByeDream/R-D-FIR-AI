@@ -1,7 +1,7 @@
 ﻿using System.Drawing;
 using System.Windows.Forms;
 using System;
-using Chess;
+using Gobang;
 
 
 namespace FiveChess
@@ -13,7 +13,7 @@ namespace FiveChess
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        private ChessManager chessMan = null;
+        private GameManager chessMan = null;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -49,7 +49,7 @@ namespace FiveChess
             this.Name = "ChessForm";
             this.Text = "Gobang";
 
-            chessMan = new ChessManager();
+            chessMan = new GameManager();
 
             this.ResumeLayout(false);
 

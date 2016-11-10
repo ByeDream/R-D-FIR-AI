@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Chess
+namespace Gobang
 {
     public class StepTree
     {
@@ -36,7 +36,7 @@ namespace Chess
         {
             _bestPosition.reset();
             _priority = 0;
-            Logs.writeln("count = " + Droper.cal_count, 4);
+            Logs.writeln("count = " + Searcher.cal_count, 4);
             foreach (var node in _tree)
             {
                 if(_priority <= 5 && node.Value.rootNode.total == (int)WinState.BLACK_WIN )

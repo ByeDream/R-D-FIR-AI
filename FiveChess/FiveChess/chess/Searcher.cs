@@ -4,14 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Collections;
 
-namespace Chess
+namespace Gobang
 {
-    public class Droper
+    public class Searcher
     {
-        public Droper(Rule rule)
+        public Searcher(Rule rule)
         {
             _rule = rule;
-
+            _replaceTable = new ReplaceTable();
             _tmpChessTable = new int[Side.ROW][];
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
@@ -30,17 +30,27 @@ namespace Chess
             //st_temp = new StepTree(root);
 
             int value = Calculator.calIncreaseValue(_tmpChessTable, ref root);
+            _pawnSum++;
 
+            _curPawnSum = _pawnSum;
             cal_count = 0;
             cur_max_depth = depth;
 
             //极大极小值算法
-            //think(ref root, root.row, root.col, root.color, 0, depth);
+            //minMax(ref root, root.row, root.col, root.color, 0, depth);
 
+            DateTime dt_begin = DateTime.Now;
+
+            int a = DateTime.Now.Millisecond;
             //alphabeta算法
             alphaBeta(ref root, root.row, root.col, root.color, 0, -0xfffffff, 0xfffffff, depth);
 
-            Logs.writeln("count = " + Droper.cal_count, 5);
+            DateTime dt_end = DateTime.Now;
+
+            Logs.writeln("time used:" + Convert.ToInt64((dt_end.ToUniversalTime() - dt_begin.ToUniversalTime()).TotalMilliseconds), 4);
+
+            Logs.writeln("count :" + Searcher.cal_count, 4);
+
             //st_temp.print();
             return _bestPosition;
         }
@@ -55,7 +65,7 @@ namespace Chess
 
         public int cur_max_depth = 0;
         public static int cal_count = 0;
-        public int think(ref Position currentPos, int row, int col, int color, int current_value, int depth)
+        public int minMax(ref Position currentPos, int row, int col, int color, int current_value, int depth)
         {
             cal_count++;
 
@@ -68,7 +78,7 @@ namespace Chess
             _tmpChessTable[row][col] = color;
 
             //如果胜负已分出，返回胜负值
-            int state = _rule.checkWinner(_tmpChessTable, row, col);
+            int state = _rule.checkWinner(_tmpChessTable, color, row, col);
             if (WinState.GAMING != state)
             {
                 currentPos.total = (color == Color.BLACK ? WinState.BLACK_WIN : WinState.WHITE_WIN);
@@ -105,7 +115,7 @@ namespace Chess
                 {
                     Position pDrop = canDropTable.getValue(pos);
 
-                    tempValue = think(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, depth - 1);
+                    tempValue = minMax(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, depth - 1);
                     if (theBestValue < tempValue)
                     {
                         theBestValue = tempValue;
@@ -126,7 +136,7 @@ namespace Chess
                 {
                     Position pDrop = canDropTable.getValue(pos);
 
-                    tempValue = think(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, depth - 1);
+                    tempValue = minMax(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, depth - 1);
                     if (theBestValue > tempValue)
                     {
                         theBestValue = tempValue;
@@ -149,13 +159,17 @@ namespace Chess
 
         #region alphabeta 剪枝算法
 
+
+        private int _curPawnSum = 0;
+        private long time = 0;
         //public int cur_max_step = 0;
         //public static int cal_count = 0;
-        public int alphaBeta(ref Position currentPos, int row, int col, int color, int current_value, int alhpa, int beta, int depth)
+        public int alphaBeta(ref Position currentPos, int row, int col, int color, int current_value, int alpha, int beta, int depth)
         {
+            cal_count++;
+
             #region 初始化
 
-            cal_count++;
             int next_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
             int tempValue = 0;
             int theBestValue = (next_color == _PCColor ? -0xfffffff : 0xfffffff);
@@ -166,22 +180,32 @@ namespace Chess
 
             int tmpColor = _tmpChessTable[row][col];
             _tmpChessTable[row][col] = color;
+            _curPawnSum++;
 
             #endregion
 
             #region  如果胜负已分出，返回胜负值
 
-            int state = _rule.checkWinner(_tmpChessTable, row, col);
+            int state = _rule.checkWinner(_tmpChessTable, color, row, col);
             if (WinState.GAMING != state)
             {
                 currentPos.total = (color == Color.BLACK ? WinState.BLACK_WIN : WinState.WHITE_WIN);
+
                 _tmpChessTable[row][col] = tmpColor;
+                _curPawnSum--;
+
                 return currentPos.total;
             }
 
             #endregion
 
             #region  如果计算到了最后一步，返回计算值
+
+            int total = _replaceTable.LookupHashTable(alpha, beta, _curPawnSum, color);
+            if(total != WinState.INVALIDE)
+            {
+                return total;
+            }
 
             if (depth <= 0)
             {
@@ -196,7 +220,13 @@ namespace Chess
                 {
                     currentPos.total = current_value - currentPos.val - _BaseValueTable[row][col];
                 }
+
+                _replaceTable.Insert(_pawnSum, HashItem.type_value, currentPos.total, _tmpChessTable[row][col]);
+
+                //还原棋盘
                 _tmpChessTable[row][col] = tmpColor;
+                _curPawnSum--;
+
                 return currentPos.total;
             }
 
@@ -209,29 +239,30 @@ namespace Chess
 
             #endregion
 
-            if(next_color == Color.BLACK)
+            if (next_color == Color.BLACK)
             {
                 for (int pos = 0; pos < canDropTable.Length; pos++)
                 {
                     Position pDrop = canDropTable.getValue(pos);
 
-                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, alhpa, beta, depth - 1);
+                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value + pDrop.val, alpha, beta, depth - 1);
 
-                    if (alhpa < tempValue)
+                    if (alpha < tempValue)
                     {
-                        alhpa = tempValue;
+                        alpha = tempValue;
                         if (depth == cur_max_depth)
                         {
                             _bestPosition = pDrop;
                         }
                     }
-                    if (alhpa >= beta)
+                    if (alpha >= beta)
                     {
                         break;
                     }
                 }
                 _tmpChessTable[row][col] = tmpColor;
-                return alhpa;
+                _curPawnSum--;
+                return alpha;
             }
             else
             {
@@ -239,173 +270,21 @@ namespace Chess
                 {
                     Position pDrop = canDropTable.getValue(pos);
 
-                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, alhpa, beta, depth - 1);
+                    tempValue = alphaBeta(ref pDrop, pDrop.row, pDrop.col, pDrop.color, current_value - pDrop.val, alpha, beta, depth - 1);
 
                     if (beta > tempValue)
                     {
                         beta = tempValue;
                     }
-                    if (beta <= alhpa)
+                    if (beta <= alpha)
                     {
                         break;
                     }
                 }
                 _tmpChessTable[row][col] = tmpColor;
+                _curPawnSum--;
                 return beta;
             }
-        }
-
-        #endregion
-
-        #region 主递归调用2
-
-        private void doStep(int color, ref Position pos)
-        {
-            if (pos.color != 0)
-                throw new Exception("Do error step.");
-            pos.color = _tmpChessTable[pos.row][pos.col];
-            _tmpChessTable[pos.row][pos.col] = color;
-        }
-
-        private void unDoStep(Position pos)
-        {
-            _tmpChessTable[pos.row][pos.col] = pos.color;
-        }
-
-        public void setWinflg(int tempValue, ref int theBestValue, int next_color, ref bool win, ref bool fail)
-        {
-            if (next_color == Color.BLACK)
-            {
-                if (tempValue != (int)WinState.WHITE_WIN && tempValue > theBestValue)
-                {
-                    theBestValue = tempValue;
-                }
-            }
-            else if (next_color == Color.WHITE)
-            {
-                if (tempValue > theBestValue)
-                {
-                    theBestValue = tempValue;
-                }
-            }
-
-            if (tempValue != (int)WinState.BLACK_WIN)
-            {
-                win = false;
-            }
-            if (tempValue != (int)WinState.WHITE_WIN)
-            {
-                fail = false;
-            }
-        }
-
-        public void setWinflg2(ref Position currentPos, ref StepTree st, ref bool win, ref bool fail)
-        {
-            if (win)
-            {
-                currentPos.total = (int)WinState.BLACK_WIN;
-                if (st.parent != null)
-                {
-                    st.parent.rootNode.haveWin = 1;
-                }
-            }
-
-            if (fail)
-            {
-                currentPos.total = (int)WinState.WHITE_WIN;
-                if (st.parent != null)
-                {
-                    st.parent.rootNode.haveFail = 1;
-                }
-            }
-        }
-
-        private int row_t = 0;
-        private int col_t = 0;
-        private int color_t = 0;
-        private int next_color = 0;
-        private int state = 0;
-        private int stepValue_t = 0;
-
-        public int think(ref Position currentPos, ref StepTree st, int depth)
-        {
-            cal_count++;
-            //st.rootNode.depth = depth;
-            row_t = currentPos.row;
-            col_t = currentPos.col;
-            color_t = currentPos.color;
-            next_color = (color_t == Color.BLACK) ? Color.WHITE : Color.BLACK;
-
-            bool win = true;
-            bool fail = true;
-            int tempValue_t = 0;
-            int theBestValue_t = -0xfffffff;
-
-            //保存棋子初始值, 并下这一步棋
-            //doStep(color_t, ref pStep);
-            int tmpColor = _tmpChessTable[row_t][col_t];
-            _tmpChessTable[row_t][col_t] = color_t;
-
-            //如果胜负已分出，返回胜负值
-            state = _rule.checkWinner(_tmpChessTable, row_t, col_t);
-            if (WinState.GAMING != state)
-            {
-                setWinflg(state, ref theBestValue_t, next_color, ref win, ref fail);
-                setWinflg2(ref currentPos, ref st, ref win, ref fail);
-
-                _tmpChessTable[row_t][col_t] = tmpColor;
-                //unDoStep(pStep);
-                return state;
-            }
-
-            //如果计算到了最后一步，返回计算值
-            if (depth <= 0)
-            {
-                stepValue_t = Calculator.calIncreaseValue(_tmpChessTable, ref currentPos);
-                stepValue_t += _BaseValueTable[row_t][col_t];
-
-                setWinflg(stepValue_t, ref theBestValue_t, next_color, ref win, ref fail);
-                setWinflg2(ref currentPos, ref st, ref win, ref fail);
-
-                _tmpChessTable[row_t][col_t] = tmpColor;
-                //unDoStep(pStep);
-                return stepValue_t;
-            }
-
-            //得到可以落子的表
-            DropTable canDropTable = new DropTable();
-            calCanDrop(_tmpChessTable, next_color, canDropTable);
-
-            for (int pos = 0; pos < canDropTable.Length; pos++)
-            {
-                Position pDrop = canDropTable.getValue(pos);
-                if (pDrop.val == 0 || pDrop.alone)
-                {
-                    break;
-                }
-
-                //把这步棋加到树
-                StepTree childTree = new StepTree();
-                st.addChild(ref pDrop, ref childTree);
-
-                tempValue_t = think(ref pDrop, ref childTree, depth - 1);
-
-                setWinflg(tempValue_t, ref theBestValue_t, next_color, ref win, ref fail);
-
-                if (tempValue_t == WinState.BLACK_WIN || tempValue_t == WinState.WHITE_WIN)
-                {
-                    break;
-                }
-            }
-
-            setWinflg2(ref currentPos, ref st, ref win, ref fail);
-
-            //Logs.writeln("deep = " + depth + "\trow=" + currentPos.row + "\tcol=" + currentPos.col + "\tcolor=" + currentPos.color + "\tval=" + currentPos.val + "\twin=" + currentPos.win, 4);
-
-            _tmpChessTable[row_t][col_t] = tmpColor;
-            //unDoStep(pStep);
-
-            return theBestValue_t;
         }
 
         #endregion
@@ -418,12 +297,18 @@ namespace Chess
 
         public void copyBoard(int [][]data)
         {
+            _pawnSum = 0;
             //复制棋盘
             for (int r = 0; r <= Side.ROW_ID; r++)
             {
                 for (int c = 0; c <= Side.COL_ID; c++)
                 {
                     _tmpChessTable[r][c] = data[r][c];
+
+                    if (data[r][c] != 0)
+                    {
+                        _pawnSum++;
+                    }
                 }
             }
         }
@@ -470,8 +355,13 @@ namespace Chess
         }
         #endregion
 
+
+        private int _pawnSum = 0;
+
         //临时棋盘
         private int[][] _tmpChessTable;
+
+        private ReplaceTable _replaceTable;
 
         private Rule _rule;
 

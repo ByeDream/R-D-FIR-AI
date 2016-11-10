@@ -5,21 +5,21 @@ using System.Text;
 
 using System.Drawing;
 
-namespace Chess
+namespace Gobang
 {
-    class ChessManager
+    class GameManager
     {
-        public ChessManager()
+        public GameManager()
         {
             _ui = new UI();
-            _chessboard = new ChessBoard();
+            _chessboard = new Pawns();
             _rule = new Rule();
 
             _Hunman = new Player(PlayerType.HUNMAN, Color.WHITE);
             _PC = new Player(PlayerType.PC, Color.BLACK);
             currentPlayer = _Hunman;
 
-            _droper = new Droper(_rule);
+            _droper = new Searcher(_rule);
             _droper.setPCColor(_PC.color);
 
             _ui.chessboard = _chessboard;
@@ -27,9 +27,9 @@ namespace Chess
 
         #region ChessBoard
 
-        private ChessBoard _chessboard = null;
+        private Pawns _chessboard = null;
 
-        public ChessBoard chessboard
+        public Pawns chessboard
         {
             get { return _chessboard; }
             set { _chessboard = value; }
@@ -94,8 +94,8 @@ namespace Chess
         #endregion
 
         #region 
-        private Droper _droper;
-        public Droper droper
+        private Searcher _droper;
+        public Searcher droper
         {
             get { return droper; }
         }
@@ -109,15 +109,15 @@ namespace Chess
 
         public void PlayChess(int row, int col)
         {
-            int state = rule.checkWinner(_chessboard.Data, row, col);
+            int state = rule.checkWinner(_chessboard.Data, CurrentPlayer.color, row, col);
 
             switch (state)
             {
                 case WinState.BLACK_WIN:
-                    Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n", Logs.level4);
+                    Logs.writeln("\n===================\n\nBLACK WIN!!!\n\n===================\n", Logs.level4);
                     return;
                 case WinState.WHITE_WIN:
-                    Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
+                    Logs.writeln("\n===================\n\nWHITE WIN!!!\n\n===================\n", Logs.level4);
                     return;
                 default:
                     break;
@@ -127,15 +127,15 @@ namespace Chess
 
             _chessboard.setData(p.row, p.col, p.color);
 
-            state = rule.checkWinner(_chessboard.Data, p.row, p.col);
+            state = rule.checkWinner(_chessboard.Data, p.color, p.row, p.col);
 
             switch (state)
             {
                 case WinState.BLACK_WIN:
-                    Logs.writeln("\n===================\n\nBLACK WINS!!!\n\n===================\n", Logs.level4);
+                    Logs.writeln("\n===================\n\nBLACK WIN!!!\n\n===================\n", Logs.level4);
                     return;
                 case WinState.WHITE_WIN:
-                    Logs.writeln("\n===================\n\nWHITE WINS!!!\n\n===================\n", Logs.level4);
+                    Logs.writeln("\n===================\n\nWHITE WIN!!!\n\n===================\n", Logs.level4);
                     return;
                 default:
                     break;
