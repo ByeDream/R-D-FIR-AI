@@ -68,7 +68,6 @@ namespace Gobang
             }
             if (pos.alone)
             {
-                //_ddata[_length].p.reset(pos);
                 return;
             }
             
@@ -174,7 +173,6 @@ namespace Gobang
     }
 
     #endregion
-
 
     #region 可以落子的表, 用链表做数据
     public class DropTable
@@ -318,7 +316,6 @@ namespace Gobang
                 }
             }
 
-            //_data.in
             if (mid < _data.Count && _data.ElementAt(mid).val < pos.val)
             {
                 _data.Insert(mid + 1, pos);

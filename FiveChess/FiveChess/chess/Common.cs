@@ -9,6 +9,7 @@ namespace Gobang
     public class Con
     {
         public const int WIN_COUNT = 5;
+        public const int THINK_DEPTH = 5;
     }
 
     public class Color
@@ -73,29 +74,82 @@ namespace Gobang
     //棋型的价值
     public class Cost
     {
-        public const int One_d1 = 150;      //独1 一头活
-        public const int One_1 = 300;     //独1 两头活
+        public const int One_d1 = 15;      //独1 一头活
+        public const int One_1 = 30;     //独1 两头活
 
-        public const int Tow_d11 = 600;     //活2, 一头活
-        public const int Tow_11 = 900;     //活2, 两头活
-        //public const int Tow_d101 = 400;     //活2, 一头活
-        //public const int Tow_101 = 600;     //活2, 两头活
+        public const int Tow_d11 = 55;     //活2, 一头活
+        public const int Tow_11 = 80;     //活2, 两头活
+        public const int Tow_d101 = 60;     //活2, 一头活
+        public const int Tow_101 = 80;     //活2, 两头活
 
-        public const int Three_111 = 1800;   //活3, 两头活
-        public const int Three_d111 = 1200;   //活3, 一头活
-        //public const int Three_1011d = 450;   //活3, 有一的那头活
-        //public const int Three_d1011 = 455;   //活3, 有二的那头活
-        //public const int Three_1011 = 700;   //活3, 两头活
+        public const int Three_111 = 100;   //活3, 两头活
+        public const int Three_d111 = 80;   //活3, 一头活
+
+        public const int Three_d1101 = 80;   //活3, 有一的那头活
+        public const int Three_d1011 = 80;   //活3, 有二的那头活
+        public const int Three_1011 = 100;   //活3, 两头活
+
+        public const int Four_d1111 = 400;
+        public const int Four_11101 = 400;
+        public const int Four_d11101 = 350;
+        public const int Four_d10111 = 380;
+        public const int Four_d11011 = 370;
+        public const int Four_11011 = 390;
+
+        public const int Fiv_d111101 = 420;
+        public const int Fiv_d111011 = 430;
+        public const int Fiv_d110111 = 440;
+        public const int Fiv_110111 = 450;
+
+        public const int Six_d1111011 = 500;
+        public const int Six_d1110111 = 510;
+        public const int Six_1110111 = 520;
+        public const int Seven_d11110111 = 530;
+
+        public const int One_add_1_a = Tow_d11 - One_d1;                        //1+1 一头活, 下了活的的那头
+        public const int One_add_1_b = Tow_11 - One_1;                          //1+1, 两头活,下了活的的那头
+        public const int Tow_add_1_a = Three_d111 - Tow_d11;                    //2+1, 一头活, 下了活的的那头, 或则中间
+        public const int Two_add_1_b = Three_111 - Tow_11;                      //2+1, 两头活,下了活的那头
+        public const int Three_add_1 = Four_d1111 - Three_d111;                  //3+1, 一头活, 下了堵死的那头
+        public const int Tree_add_1_a = Four_1111 - Three_111;                  //3+1, 两头活
+
+        public const int Four_skip = Four_1111 + 10;                                        //堵了一个四
+
+        ///////////////////////////////////////////////////////////////////斩杀线////////////////////////////////////////////////////////
+
+        public const int Fiv_101111 = 1010;
+        public const int Fiv_d101111 = 1010;
+        public const int Fiv_1011101 = 1010;
+        public const int Four_1111 = 1000;   //活4，两头活
+        public const int Six_1101111 = 1010;
+        public const int Six_d1101111 = 1020;
+
+        public const int Seven_d11101111 = 1030;
+        public const int Seven_11101111 = 1040;
+        public const int Seven_1101111 = 1050;
+
+        public const int Eight_d111101111 = 1060;
+        public const int Eight_111101111 = 1070;
+        public const int Fiv_11111 = 100000;     //=5,胜利
+
+        //public const int One_add_1 = Tow_d11 - One_d1 - 10;                     //1+1 一头活, 下了堵死的那头
+        //public const int One_add_1_c = Tow_d101 - One_1 - 20;                   //1+1, 两头活,下了堵死的那头
+        //public const int One_add_1_d = Tow_d101 - One_d1;                       //1+1, 两头活,下了堵死的那头
+        //public const int One_add_1_e = Tow_101 - One_1;                         //1+1, 两头活
+
+        //public const int Tow_add_1 = Three_d111 - Tow_d11 - 10;                 //2+1, 一头活, 下了堵死的那头
+
+        //public const int One_One_add_1_a = Three_1011d - Tow_101 - 20;          //1_1+1, 一头活, 下了1堵死的那头
+        //public const int One_One_add_1_b = Three_1011d - Tow_101;               //1_1+1, 一头活, 下了1活的那头,或者中间
+        //public const int One_One_add_1_c = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了1活的那头
+        //public const int One_One_add_1_d = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了2活的那头,或者中间
+        //public const int One_One_add_1_e = Three_1011 - Tow_101;                //1_1+1, 两头活, 下了任意位置
+
         //public const int Three_10011d = 300;
         //public const int Three_d101001 = 200;   //两头被堵死的断三
         //public const int Three_d10101d = 200;   //两头被堵死的断三
         //public const int Three_d10101 = 410;   //一头被堵死的断三
         //public const int Three_10101 = 500;   //两头活的断三
-
-        public const int Four_1111 = 3000;   //活4，两头活
-        public const int Four_d1111 = 2400;    //活4, 一头活
-
-        public const int Five_1011101 = 3000;    //三段棋
 
         //public const int Four_111001d = 850;   //断四, 两头都活着
         //public const int Four_d111001 = 560;   //断四, 两头都活着
@@ -105,8 +159,6 @@ namespace Gobang
         //public const int Four_110101 = 1500;   //断四, 两头都活着
         //public const int Four_10111d = 1500;   //断四, 一活着
         //public const int Four_d10111 = 1520;   //断四, 三活着
-        //public const int Four_11011d = 1500;   //断四, 一活着
-        //public const int Four_11011 = 1650;   //断四, 两头都活着
         //public const int Four_10111 = 1650;   //断四, 一三活着
 
         //public const int Fiv_d1101011d = 200;   //两头被堵死的断五
@@ -120,29 +172,6 @@ namespace Gobang
         //public const int Fiv_113_2a = 1000;   //两头被堵死的断五
         //public const int Fiv_131_0a = 5000;   //两头被堵死的断五, 中间是3个，相当于两个冲四
         //public const int Fiv_131_2a = 5000;   //两头被堵死的断五, 中间是3个，相当于两个冲四
-
-        public const int Five = 100000;     //=5,胜利
-
-        //public const int One_add_1 = Tow_d11 - One_d1 - 10;                     //1+1 一头活, 下了堵死的那头
-        public const int One_add_1_a = Tow_d11 - One_d1;                        //1+1 一头活, 下了活的的那头
-        public const int One_add_1_b = Tow_11 - One_1;                          //1+1, 两头活,下了活的的那头
-        //public const int One_add_1_c = Tow_d101 - One_1 - 20;                   //1+1, 两头活,下了堵死的那头
-        //public const int One_add_1_d = Tow_d101 - One_d1;                       //1+1, 两头活,下了堵死的那头
-        //public const int One_add_1_e = Tow_101 - One_1;                         //1+1, 两头活
-
-        //public const int Tow_add_1 = Three_d111 - Tow_d11 - 10;                 //2+1, 一头活, 下了堵死的那头
-        public const int Tow_add_1_a = Three_d111 - Tow_d11;                    //2+1, 一头活, 下了活的的那头, 或则中间
-        public const int Two_add_1_b = Three_111 - Tow_11;                      //2+1, 两头活,下了活的那头
-        //public const int One_One_add_1_a = Three_1011d - Tow_101 - 20;          //1_1+1, 一头活, 下了1堵死的那头
-        //public const int One_One_add_1_b = Three_1011d - Tow_101;               //1_1+1, 一头活, 下了1活的那头,或者中间
-        //public const int One_One_add_1_c = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了1活的那头
-        //public const int One_One_add_1_d = Three_d1011 - Tow_101;               //1_1+1, 一头活, 下了2活的那头,或者中间
-        //public const int One_One_add_1_e = Three_1011 - Tow_101;                //1_1+1, 两头活, 下了任意位置
-
-        public const int Three_add_1 = Four_d1111 - Three_d111;                  //3+1, 一头活, 下了堵死的那头
-        public const int Tree_add_1_a = Four_1111 - Three_111 + 1000;                  //3+1, 两头活
-
-        public const int Four_skip = 20000;                                        //堵了一个四
         //public const int Tow_One_add_1_a = Four_10111d - Three_1011 - 20;       //2_1+1, 一头活, 下了堵死的3
         //public const int Tow_One_add_1_b = Four_10111d - Three_1011d;           //2_1+1, 一头活, 下了堵死的3
         //public const int Tow_One_add_1_c = Four_11011d - Three_1011 - 20;       //2_1+1, 一头活, 下了堵死的1
@@ -336,7 +365,7 @@ namespace Gobang
             this.p1 = new Position(0, 0);
             this.p2 = new Position(0, 0);
 
-            reset(p1.col,p1.row,p2.col,p2.row,color);
+            reset(p1.col, p1.row, p2.col, p2.row, color);
         }
 
         public void reset(int col1, int row1, int col2, int row2, int color)

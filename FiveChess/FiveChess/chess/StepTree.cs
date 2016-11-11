@@ -36,7 +36,7 @@ namespace Gobang
         {
             _bestPosition.reset();
             _priority = 0;
-            Logs.writeln("count = " + Searcher.cal_count, 4);
+            Logs.writeln("count = " + Searcher._cal_count, 4);
             foreach (var node in _tree)
             {
                 if(_priority <= 5 && node.Value.rootNode.total == (int)WinState.BLACK_WIN )

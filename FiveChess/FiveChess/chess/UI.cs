@@ -49,7 +49,7 @@ namespace Gobang
         private Image black_chess = null;
 
         private  Pawns _chb  = null;
-        public Pawns chessboard
+        public Pawns _pawns
         {
             set { _chb = value; }
         }

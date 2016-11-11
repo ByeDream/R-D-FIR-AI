@@ -574,17 +574,15 @@ namespace Gobang
 
         #endregion
 
-        #region 计算一条线上不连续的棋 或则 有其他颜色的棋
+        #region 计算一条线上是否有不连续的同颜色的棋 或则 有连续的其他颜色的棋
+
+        private static int tmp_color = 0;
 
         //计算水平方向一串棋首尾是否还有不连续的棋 或则 有其他颜色的棋
         public static void calHorizontalLine(int[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
-            int tmp_color = Color.BLACK;
-            if(color == Color.BLACK)
-            {
-                tmp_color = Color.WHITE;
-            }
-            if (src.p1.col >= 1 && data[src.p1.row][src.p1.col - 1] == tmp_color)
+            tmp_color = (color == Color.BLACK? Color.WHITE:Color.BLACK);
+             if (src.p1.col >= 1 && data[src.p1.row][src.p1.col - 1] == tmp_color)
             {
                 calHorizontalCount(data, src.p1.row, src.p1.col - 1, ref line1);
             }
@@ -593,7 +591,7 @@ namespace Gobang
             {
                 calHorizontalCount(data, src.p1.row, src.p1.col - 2, ref line1);
             }
-
+            
             if (src.p2.col <= Side.COL_ID - 1 && data[src.p2.row][src.p2.col + 1] == tmp_color)
             {
                 calHorizontalCount(data, src.p2.row, src.p2.col + 1, ref line2);
@@ -602,17 +600,12 @@ namespace Gobang
             {
                 calHorizontalCount(data, src.p2.row, src.p2.col + 2, ref line2);
             }
-            //return src.length + line1.length + line2.length;
         }
 
         //计算垂直方向一串棋首尾是否还有不连续的棋
-        public static int calVerticalLine(int[][] data, int color, Line src, ref Line line1, ref Line line2)
+        public static void calVerticalLine(int[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
-            int tmp_color = Color.BLACK;
-            if (color == Color.BLACK)
-            {
-                tmp_color = Color.WHITE;
-            }
+            tmp_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
             if (src.p1.row >= 1 && data[src.p1.row - 1][src.p1.col] == tmp_color)
             {
                 calVerticalCount(data, src.p1.row - 1, src.p1.col, ref line1);
@@ -631,17 +624,12 @@ namespace Gobang
             {
                 calVerticalCount(data, src.p2.row + 2, src.p2.col, ref line2);
            }
-            return src.length + line1.length + line2.length;
         }
 
         //计算左上到右下方向一串棋首尾是否还有不连续的棋
-        public static int calInclined_LT(int[][] data, int color, Line src, ref Line line1, ref Line line2)
+        public static void calInclined_LT(int[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
-            int tmp_color = Color.BLACK;
-            if (color == Color.BLACK)
-            {
-                tmp_color = Color.WHITE;
-            }
+            tmp_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
             if (src.p1.col >= 1 && src.p1.row >= 1 && data[src.p1.row - 1][src.p1.col - 1] == tmp_color)
             {
                 calInclinedCount_LT(data, src.p1.row - 1, src.p1.col - 1, ref line1);
@@ -660,17 +648,12 @@ namespace Gobang
             {
                 calInclinedCount_LT(data, src.p2.row + 2, src.p2.col + 2, ref line2);
             }
-            return src.length + line1.length + line2.length;
         }
 
         //计算左下到右上方向一串棋首尾是否还有不连续的棋
-        public static int calInclined_LB(int[][] data, int color, Line src, ref Line line1, ref Line line2)
+        public static void calInclined_LB(int[][] data, int color, Line src, ref Line line1, ref Line line2)
         {
-            int tmp_color = Color.BLACK;
-            if (color == Color.BLACK)
-            {
-                tmp_color = Color.WHITE;
-            }
+            tmp_color = (color == Color.BLACK ? Color.WHITE : Color.BLACK);
 
             if (src.p1.col >= 1 && src.p1.row <= Side.ROW_ID - 1 && data[src.p1.row + 1][src.p1.col - 1] == tmp_color)
             {
@@ -690,16 +673,72 @@ namespace Gobang
             {
                 calInclinedCount_LB(data, src.p2.row - 2, src.p2.col + 2, ref line2);
             }
-            return src.length + line1.length + line2.length;
         }
 
+        #endregion
+
+        #region 计算一条线上是否有不连续的同颜色的棋
+
+        //计算水平方向一串棋首尾是否还有不连续的棋
+        public static void calHorizontalLines(int[][] data, int color, Line src, ref Line front, ref Line end)
+        {
+            //计算是否有不连续的棋, 至少边界要有两个空位置才有可能
+            if (src.p1.col >= 2 && data[src.p1.row][src.p1.col - 2] != Color.NONE)
+            {
+                calHorizontalCount(data, src.p1.row, src.p1.col - 2, ref front);
+            }
+
+            if (src.p2.col <= Side.COL_ID - 2 && data[src.p2.row][src.p2.col + 2] != Color.NONE)
+            {
+                calHorizontalCount(data, src.p2.row, src.p2.col + 2, ref end);
+            }
+        }
+
+        //计算垂直方向一串棋首尾是否还有不连续的棋
+        public static void calVerticalLines(int[][] data, int color, Line src, ref Line front, ref Line end)
+        {
+            if (src.p1.row >= 2 && data[src.p1.row - 2][src.p1.col] != Color.NONE)
+            {
+                calVerticalCount(data, src.p1.row - 2, src.p1.col, ref front);
+            }
+
+            if (src.p2.row <= Side.ROW_ID - 2 && data[src.p2.row + 2][src.p2.col] != Color.NONE)
+            {
+                calVerticalCount(data, src.p2.row + 2, src.p2.col, ref end);
+            }
+        }
+
+        //计算左上到右下方向一串棋首尾是否还有不连续的棋
+        public static void calInclined_LTs(int[][] data, int color, Line src, ref Line front, ref Line end)
+        {
+            if (src.p1.col >= 2 && src.p1.row >= 2 && data[src.p1.row - 2][src.p1.col - 2] != Color.NONE)
+            {
+                calInclinedCount_LT(data, src.p1.row - 2, src.p1.col - 2, ref front);
+            }
+            if (src.p2.col <= Side.COL_ID - 2 && src.p2.row <= Side.ROW_ID - 2 && data[src.p2.row + 2][src.p2.col + 2] != Color.NONE)
+            {
+                calInclinedCount_LT(data, src.p2.row + 2, src.p2.col + 2, ref end);
+            }
+        }
+
+        //计算左下到右上方向一串棋首尾是否还有不连续的棋
+        public static void calInclined_LBs(int[][] data, int color, Line src, ref Line front, ref Line end)
+        {
+            if (src.p1.col >= 2 && src.p1.row <= Side.ROW_ID - 2 && data[src.p1.row + 2][src.p1.col - 2] != Color.NONE)
+            {
+                calInclinedCount_LB(data, src.p1.row + 2, src.p1.col - 2, ref front);
+            }
+            if (src.p2.row >= 2 && src.p2.col <= Side.COL_ID - 2 && data[src.p2.row - 2][src.p2.col + 2] != Color.NONE)
+            {
+                calInclinedCount_LB(data, src.p2.row - 2, src.p2.col + 2, ref end);
+            }
+        }
         #endregion
 
         #region 计算一串棋的价值
         private static int l_cost1 = 0;
         public static int calCost(int length, LineType type)
         {
-            l_cost1 = 0;
             switch (length)
             {
                 case 0:
@@ -773,7 +812,7 @@ namespace Gobang
                         break;
                     }
                 default:
-                    l_cost1 = Cost.Five;
+                    l_cost1 = Cost.Fiv_11111;
                     break;
             }
 
@@ -857,12 +896,284 @@ namespace Gobang
                         break;
                     }
                 default:
-                    l_cost2 = Cost.Five;
+                    l_cost2 = Cost.Fiv_11111;
                     break;
             }
 
             line.cost = l_cost2;
             return l_cost2;
+        }
+
+        private static int towLineCost = 0;
+        public static int calTowLineCost(int[][] data, ref Line front, ref Line end)
+        {
+            towLineCost = 0;
+            switch (front.length)
+            {
+                case 1:
+                    switch (end.length)
+                    {
+                        case 1:
+                            if (front.type == LineType.MinDeadMaxLive || end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Tow_d101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Tow_101;
+                            }
+                            break;
+                        case 2:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Three_d1011;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Three_d1101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Three_1011;
+                            }
+                            break;
+                        case 3:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Four_d10111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Four_d11101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Four_11101;
+                            }
+                            break;
+                        case 4:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Fiv_d101111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Fiv_d111101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Fiv_101111;
+                            }
+                            break;
+                        default:
+                            towLineCost = Cost.Fiv_11111;
+                            break;
+                    }
+                    break;
+                case 2:
+                    switch (end.length)
+                    {
+                        case 1:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Three_d1101;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Three_d1011;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Three_1011;
+                            }
+                            break;
+                        case 2:
+                            if (front.type == LineType.MinDeadMaxLive || end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Four_d11011;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Four_11011;
+                            }
+                            break;
+                        case 3:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Fiv_d110111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Fiv_d111011;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Four_11101;
+                            }
+                            break;
+                        case 4:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Six_d1101111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Six_d1101111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Six_d1111011;
+                            }
+                            break;
+                        default:
+                            towLineCost = Cost.Fiv_11111;
+                            break;
+                    }
+                    break;
+                case 3:
+                    switch (end.length)
+                    {
+                        case 1:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Four_d10111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Four_d11101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Four_11101;
+                            }
+                            break;
+                        case 2:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Fiv_d111011;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Fiv_d110111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Fiv_110111;
+                            }
+                            break;
+                        case 3:
+                            if (front.type == LineType.MinDeadMaxLive || end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Six_d1110111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Six_1110111;
+                            }
+                            break;
+                        case 4:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Fiv_d101111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Fiv_d111101;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Seven_11101111;
+                            }
+                            break;
+                        default:
+                            towLineCost = Cost.Fiv_11111;
+                            break;
+                    }
+                    break;
+                case 4:
+                    switch (end.length)
+                    {
+                        case 1:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Fiv_d111101;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Fiv_d101111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Fiv_101111;
+                            }
+                            break;
+                        case 2:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Six_d1111011;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Six_d1101111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Six_1101111;
+                            }
+                            break;
+                        case 3:
+                            if (front.type == LineType.MinDeadMaxLive)
+                            {
+                                towLineCost = Cost.Seven_d11101111;
+                            }
+                            else if (end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Seven_d11110111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Seven_11101111;
+                            }
+                            break;
+                        case 4:
+                            if (front.type == LineType.MinDeadMaxLive || end.type == LineType.MinLiveMaxDead)
+                            {
+                                towLineCost = Cost.Eight_d111101111;
+                            }
+                            else
+                            {
+                                towLineCost = Cost.Eight_111101111;
+                            }
+                            break;
+                        default:
+                            towLineCost = Cost.Fiv_11111;
+                            break;
+                    }
+                    break;
+                default:
+                    towLineCost = Cost.Fiv_11111;
+                    break;
+            }
+            return towLineCost;
+        }
+
+        private static int threeLineCost = 0;
+        public static int calTowLineCost(int[][] data, ref Line front, ref Line mid, ref Line end)
+        {
+            if (mid.length + front.length >= 4 && mid.length + end.length >= 4)
+            {
+                return 3000;
+            }
+
+
+            if(front.length > end.length)
+            {
+                return calTowLineCost(data, ref front, ref end) + calCost(ref end);
+            }
+            else
+            {
+                return calTowLineCost(data, ref mid, ref end) + calCost(ref front);
+            }
         }
 
         #endregion
@@ -884,7 +1195,7 @@ namespace Gobang
                             cal_in_cost = 0;
                             break;
                         default:
-                            cal_in_cost = Cost.Five;
+                            cal_in_cost = Cost.Fiv_11111;
                             break;
                     }
                     break;
@@ -905,7 +1216,7 @@ namespace Gobang
                             cal_in_cost = Cost.Three_add_1;
                             break;
                         default:
-                            cal_in_cost = Cost.Five;
+                            cal_in_cost = Cost.Fiv_11111;
                             break;
                     }
                     break;
@@ -925,7 +1236,7 @@ namespace Gobang
                             cal_in_cost = Cost.Tree_add_1_a;
                             break;
                         default:
-                            cal_in_cost = Cost.Five;
+                            cal_in_cost = Cost.Fiv_11111;
                             break;
                     }
                     break;
@@ -945,7 +1256,21 @@ namespace Gobang
             {
                 if (p.row == mid.p1.row && p.col == mid.p1.col)
                 {
-                    cal_in_cost1 += 300 * min.length - 10;
+                    switch(min.length)
+                    {
+                        case 1:
+                            cal_in_cost1 += Cost.One_1 - 5;
+                            break;
+                        case 2:
+                            cal_in_cost1 += Cost.Tow_11 - 5;
+                            break;
+                        case 3:
+                            cal_in_cost1 += Cost.Three_111 - 5;
+                            break;
+                        default:
+                            cal_in_cost1 += Cost.Four_1111 - 5;
+                            break;
+                    }
                 }
 
                 if (mid.realSpace == 5)
@@ -978,16 +1303,21 @@ namespace Gobang
                     if ((mid.length == 1 ? mid.space + min.realSpace - min.maxSpace : 1 + min.realSpace) >= 5
                         && (min.maxSpace == 0 || min.realSpace < 5))
                     {
-                        switch(min.length)
+                        switch (min.length)
                         {
                             case 1:
+                                cal_in_cost1 += Cost.One_1 + 5;
+                                break;
                             case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
                             case 3:
-                                cal_in_cost1 += 300 * min.length + 10;
+                                cal_in_cost1 += Cost.Three_111 + 5;
                                 break;
-                            case 4:
-                                cal_in_cost1 += Cost.Four_d1111;
+                            default:
+                                cal_in_cost1 += Cost.Four_1111 + 5;
                                 break;
+
                         }
                     }
                     //else if (min.realSpace == 5 && min.length < 3)
@@ -1008,7 +1338,21 @@ namespace Gobang
             {
                 if (p.row == mid.p2.row && p.col == mid.p2.col)
                 {
-                    cal_in_cost2 += 300 * max.length - 10;
+                    switch (max.length)
+                    {
+                        case 1:
+                            cal_in_cost1 += Cost.One_1 - 5;
+                            break;
+                        case 2:
+                            cal_in_cost1 += Cost.Tow_11 - 5;
+                            break;
+                        case 3:
+                            cal_in_cost1 += Cost.Three_111 - 5;
+                            break;
+                        case 4:
+                            cal_in_cost1 += Cost.Four_1111 - 5;
+                            break;
+                    }
                 }
                 //else
                 //{
@@ -1048,11 +1392,15 @@ namespace Gobang
                         switch (max.length)
                         {
                             case 1:
-                            case 2:
-                            case 3:
-                                cal_in_cost2 += 300 * max.length + 10;
+                                cal_in_cost1 += Cost.One_1 + 5;
                                 break;
-                            case 4:
+                            case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
+                            case 3:
+                                cal_in_cost1 += Cost.Three_111 + 5;
+                                break;
+                            default:
                                 cal_in_cost2 += Cost.Four_d1111;
                                 break;
                         }
@@ -1075,7 +1423,7 @@ namespace Gobang
             {
                 if (mid.length >= 3)
                 {
-                    return Cost.Five_1011101;
+                    return Cost.Fiv_1011101;
                 }
                 //if (p.row == mid.p1.row && p.col == mid.p1.col && p.row == mid.p2.row && p.col == mid.p2.col)
                 //{
@@ -1110,7 +1458,21 @@ namespace Gobang
             {
                 if (p.row == mid.p1.row && p.col == mid.p1.col)
                 {
-                    cal_in_cost3 += 300 * min.length - 10;
+                    switch (max.length)
+                    {
+                        case 1:
+                            cal_in_cost1 += Cost.One_1 - 5;
+                            break;
+                        case 2:
+                            cal_in_cost1 += Cost.Tow_11 - 5;
+                            break;
+                        case 3:
+                            cal_in_cost1 += Cost.Three_111 - 5;
+                            break;
+                        default:
+                            cal_in_cost2 += Cost.Four_1111;
+                            break;
+                    }
                 }
                 if (mid.realSpace == 5)
                 {
@@ -1127,16 +1489,21 @@ namespace Gobang
                     if ((mid.length == 1 ? max.realSpace + mid.space - max.minSpace : 1 + max.realSpace) >= 5
                         && (max.minSpace == 0 || max.realSpace < 5))
                     {
-                        switch (max.length)
+                        switch (min.length)
                         {
                             case 1:
+                                cal_in_cost1 += Cost.One_1 + 5;
+                                break;
                             case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
                             case 3:
-                                cal_in_cost3 += 300 * max.length + 10;
+                                cal_in_cost1 += Cost.Three_111 + 5;
                                 break;
-                            case 4:
-                                cal_in_cost3 += Cost.Four_skip;
+                            default:
+                                cal_in_cost1 += Cost.Four_1111 + 5;
                                 break;
+
                         }
                     }
                     //else if (max.realSpace == 5)
@@ -1153,7 +1520,22 @@ namespace Gobang
             {
                 if (p.row == mid.p2.row && p.col == mid.p2.col)
                 {
-                    cal_in_cost3 += 300 * max.length - 10;
+                    switch (min.length)
+                    {
+                        case 1:
+                            cal_in_cost1 += Cost.One_1 - 5;
+                            break;
+                        case 2:
+                            cal_in_cost1 += Cost.Tow_11 - 5;
+                            break;
+                        case 3:
+                            cal_in_cost1 += Cost.Three_111 - 5;
+                            break;
+                        default:
+                            cal_in_cost1 += Cost.Four_1111 - 5;
+                            break;
+
+                    }
                 }
                 if (mid.realSpace == 5)
                 {
@@ -1173,13 +1555,18 @@ namespace Gobang
                         switch (min.length)
                         {
                             case 1:
+                                cal_in_cost1 += Cost.One_1 + 5;
+                                break;
                             case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
                             case 3:
-                                cal_in_cost3 += 300 * min.length + 10;
+                                cal_in_cost1 += Cost.Three_111 + 5;
                                 break;
-                            case 4:
-                                cal_in_cost3 += Cost.Four_skip;
+                            default:
+                                cal_in_cost1 += Cost.Four_1111 + 5;
                                 break;
+
                         }
                     }
                     //else if (min.realSpace == 5)
@@ -1216,13 +1603,18 @@ namespace Gobang
                         switch (min.length)
                         {
                             case 1:
+                                cal_in_cost1 += Cost.One_1 + 5;
+                                break;
                             case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
                             case 3:
-                                cal_in_cost3 += 300 * min.length + 10;
+                                cal_in_cost1 += Cost.Three_111 + 5;
                                 break;
-                            case 4:
-                                cal_in_cost3 += Cost.Four_skip;
+                            default:
+                                cal_in_cost1 += Cost.Four_1111 + 5;
                                 break;
+
                         }
                     }
                     //else if (min.realSpace == 5)
@@ -1235,16 +1627,21 @@ namespace Gobang
                     if ( (mid.length == 1? (min.realSpace + mid.length + max.realSpace): (1 + max.realSpace)) >= 5
                         && (max.minSpace == 0 || max.realSpace < 5))
                     {
-                        switch (max.length)
+                        switch (min.length)
                         {
                             case 1:
+                                cal_in_cost1 += Cost.One_1 + 5;
+                                break;
                             case 2:
+                                cal_in_cost1 += Cost.Tow_11 + 5;
+                                break;
                             case 3:
-                                cal_in_cost3 += 300 * max.length + 10;
+                                cal_in_cost1 += Cost.Three_111 + 5;
                                 break;
-                            case 4:
-                                cal_in_cost3 += Cost.Four_skip;
+                            default:
+                                cal_in_cost1 += Cost.Four_1111 + 5;
                                 break;
+
                         }
                     }
                     //else if (max.realSpace == 5)
@@ -1346,8 +1743,38 @@ namespace Gobang
 
         #endregion
 
+        #region 计算落子后一串不连续的棋原本的价值
+        public static int calUnSequentialLineCostBase(int[][] data, ref Line min, ref Line mid, ref Line max, Position p)
+        {
+            if (min.length == 0 && max.length == 0)
+            {
+                if (mid.realSpace < 5)
+                {
+                    return 0;
+                }
+                if (mid.realSpace == 5)
+                {
+                    return calCost(mid.length, mid.type) / 2;
+                }
+                return calCost(mid.length, mid.type);
+            }
+
+            if (min.length != 0 && max.length == 0)
+            {
+                return calTowLineCost(data, ref min, ref mid);
+            }
+
+            if (min.length == 0 && max.length != 0)
+            {
+                return calTowLineCost(data, ref mid, ref max);
+            }
+
+            return calInCreaseThreeCost(data, ref min, ref mid, ref max, ref p);
+        }
+        #endregion
+
         #region 计算落子后一串不连续的棋增加的价值
-        public static int calUnSequentialLineCost(int[][] data, ref Line min, ref Line mid, ref Line max, Position p)
+        public static int calUnSequentialLineIncreaseCost(int[][] data, ref Line min, ref Line mid, ref Line max, Position p)
         {
             if(min.length == 0 && max.length == 0)
             {
@@ -1373,104 +1800,6 @@ namespace Gobang
             }
 
             return calInCreaseThreeCost(data, ref min, ref mid, ref max, ref p);
-
-            #region 对各种集体形状估值，没有必要
-                //switch (len)
-                //{
-                //    case 3:
-                //        switch (space)
-                //        {
-                //            case 2:
-                //            case 3:
-                //                cost = Cost.Three_d10101d;
-                //                break;
-                //            case 4:
-                //                cost = Cost.Three_d10101;
-                //                break;
-                //            default:
-                //                cost = Cost.Three_10101;
-                //                break;
-                //        }
-                //        break;
-                //    case 4:
-                //        {
-                //            switch (space)
-                //            {
-                //                case 2:
-                //                    cost = Cost.Four_d110101d;
-                //                    break;
-                //                case 3:
-                //                    if (mid.length == 2 || (begin.length == 2 && begin.type == LineType.BothLive) || (end.length == 2 && end.type == LineType.BothLive))
-                //                        cost = Cost.Four_110101d;
-                //                    else
-                //                        cost = Cost.Four_d110101;
-                //                    break;
-                //                default:
-                //                    cost = Cost.Four_110101;
-                //                    break;
-                //            }
-                //            break;
-                //        }
-                //    case 5:
-                //        {
-                //            switch (space)
-                //            {
-                //                case 2:
-                //                case 3:
-                //                    {
-                //                        switch (mid.length)
-                //                        {
-                //                            case 1:
-                //                                if (begin.length == 2)
-                //                                    cost = Cost.Fiv_d1101011d;
-                //                                else if (begin.length == 3 || begin.length == 1)
-                //                                    cost = Cost.Fiv_113_0a;
-                //                                break;
-                //                            case 2:
-                //                                cost = Cost.Fiv_1101101;
-                //                                break;
-                //                            case 3:
-                //                                cost = Cost.Fiv_131_0a;
-                //                                break;
-                //                        }
-                //                        break;
-                //                    }
-                //                default:
-                //                    {
-                //                        switch (mid.length)
-                //                        {
-                //                            case 1:
-                //                                if (begin.length == 2)
-                //                                    cost = Cost.Fiv_1101011;
-                //                                else if (begin.length == 3 || begin.length == 1)
-                //                                    cost = Cost.Fiv_113_2a;
-                //                                break;
-                //                            case 2:
-                //                                cost = Cost.Fiv_221_2a;
-                //                                break;
-                //                            case 3:
-                //                                cost = Cost.Fiv_131_2a;
-                //                                break;
-                //                        }
-                //                        break;
-                //                    }
-                //            }
-                //            break;
-                //        }
-                //    default:
-                //        switch (mid.length)
-                //        {
-                //            case 1:
-                //                if (len < 7)
-                //                {
-
-                //                }
-                //                break;
-                //        }
-                //        break;
-                //}
-                #endregion 
-
         }
         #endregion
 
@@ -1516,7 +1845,7 @@ namespace Gobang
                 //计算是否有不连续的棋
                 calHorizontalLine(data, color, line_h, ref line_h_min, ref line_h_max);
 
-                cost_h = calUnSequentialLineCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
+                cost_h = calUnSequentialLineIncreaseCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
             }
             #endregion
 
@@ -1531,7 +1860,7 @@ namespace Gobang
                 //计算是否有不连续的棋
                 calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
 
-                cost_v = calUnSequentialLineCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
+                cost_v = calUnSequentialLineIncreaseCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
             }
             #endregion
 
@@ -1546,7 +1875,7 @@ namespace Gobang
                 //计算是否有不连续的棋
                 calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
 
-                cost_lt = calUnSequentialLineCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
+                cost_lt = calUnSequentialLineIncreaseCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
             }
             #endregion
 
@@ -1561,7 +1890,7 @@ namespace Gobang
                 //计算是否有不连续的棋
                 calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
 
-                cost_lb = calUnSequentialLineCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
+                cost_lb = calUnSequentialLineIncreaseCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
             }
             #endregion
 
@@ -1581,6 +1910,7 @@ namespace Gobang
         }
         #endregion
 
+        //计算相加的权值
         public static int calValue(int[][] data, ref Position p)
         {
             color = p.color;
@@ -1596,9 +1926,9 @@ namespace Gobang
                 calHorizontalCount(data, row, col, ref line_h);
 
                 //计算是否有不连续的棋
-                calHorizontalLine(data, color, line_h, ref line_h_min, ref line_h_max);
+                calHorizontalLines(data, color, line_h, ref line_h_min, ref line_h_max);
 
-                cost_h = calUnSequentialLineCost(data, ref line_h_min, ref line_h, ref line_h_max, p);
+                cost_h = calUnSequentialLineCostBase(data, ref line_h_min, ref line_h, ref line_h_max, p);
             }
             #endregion
 
@@ -1610,10 +1940,10 @@ namespace Gobang
 
                 calVerticalCount(data, row, col, ref line_v);
 
-                //计算是否有不连续的棋
-                calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
+                ////计算是否有不连续的棋
+                //calVerticalLine(data, color, line_v, ref line_v_min, ref line_v_max);
 
-                cost_v = calUnSequentialLineCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
+                //cost_v = calUnSequentialLineCost(data, ref line_v_min, ref line_v, ref line_v_max, p);
             }
             #endregion
 
@@ -1625,10 +1955,10 @@ namespace Gobang
 
                 calInclinedCount_LT(data, row, col, ref line_lt);
 
-                //计算是否有不连续的棋
-                calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
+                ////计算是否有不连续的棋
+                //calInclined_LT(data, color, line_lt, ref line_lt_min, ref line_lt_max);
 
-                cost_lt = calUnSequentialLineCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
+                //cost_lt = calUnSequentialLineCost(data, ref line_lt_min, ref line_lt, ref line_lt_max, p);
             }
             #endregion
 
@@ -1640,23 +1970,23 @@ namespace Gobang
 
                 calInclinedCount_LB(data, row, col, ref line_lb);
 
-                //计算是否有不连续的棋
-                calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
+                ////计算是否有不连续的棋
+                //calInclined_LB(data, color, line_lb, ref line_lb_min, ref line_lb_max);
 
-                cost_lb = calUnSequentialLineCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
+                //cost_lb = calUnSequentialLineCost(data, ref line_lb_min, ref line_lb, ref line_lb_max, p);
             }
             #endregion
 
-            p.val += cost_h + cost_v + cost_lt + cost_lb;
+            //p.val += cost_h + cost_v + cost_lt + cost_lb;
 
-            if (line_v.length == 1 && line_h.length == 1 && line_lb.length == 1 && line_lt.length == 1
-                && line_h_max.length == 0 && line_h_min.length == 0 && line_v_max.length == 0 && line_v_min.length == 0
-                && line_lt_max.length == 0 && line_lt_min.length == 0 && line_lb_max.length == 0 && line_lb_min.length == 0)
-            {
-                //这里强行把值设为0，防止排序的时候出错
-                p.val = 0;
-                p.alone = true;
-            }
+            //if (line_v.length == 1 && line_h.length == 1 && line_lb.length == 1 && line_lt.length == 1
+            //    && line_h_max.length == 0 && line_h_min.length == 0 && line_v_max.length == 0 && line_v_min.length == 0
+            //    && line_lt_max.length == 0 && line_lt_min.length == 0 && line_lb_max.length == 0 && line_lb_min.length == 0)
+            //{
+            //    //这里强行把值设为0，防止排序的时候出错
+            //    p.val = 0;
+            //    p.alone = true;
+            //}
 
             //Logs.writeln("cost=" + p.val, 4);
             return p.val;

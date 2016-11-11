@@ -12,27 +12,28 @@ namespace Gobang
         public GameManager()
         {
             _ui = new UI();
-            _chessboard = new Pawns();
+            _pawns = new Pawns();
             _rule = new Rule();
+
+            _sercher = new Searcher(_rule, Con.THINK_DEPTH);
 
             _Hunman = new Player(PlayerType.HUNMAN, Color.WHITE);
             _PC = new Player(PlayerType.PC, Color.BLACK);
             currentPlayer = _Hunman;
 
-            _droper = new Searcher(_rule);
-            _droper.setPCColor(_PC.color);
+            _sercher.setPCColor(_PC.color);
 
-            _ui.chessboard = _chessboard;
+            _ui._pawns = _pawns;
         }
 
         #region ChessBoard
 
-        private Pawns _chessboard = null;
+        private Pawns _pawns = null;
 
         public Pawns chessboard
         {
-            get { return _chessboard; }
-            set { _chessboard = value; }
+            get { return _pawns; }
+            set { _pawns = value; }
         }
         #endregion
 
@@ -94,7 +95,7 @@ namespace Gobang
         #endregion
 
         #region 
-        private Searcher _droper;
+        private Searcher _sercher;
         public Searcher droper
         {
             get { return droper; }
@@ -109,7 +110,7 @@ namespace Gobang
 
         public void PlayChess(int row, int col)
         {
-            int state = rule.checkWinner(_chessboard.Data, CurrentPlayer.color, row, col);
+            int state = rule.checkWinner(_pawns.Data, CurrentPlayer.color, row, col);
 
             switch (state)
             {
@@ -123,11 +124,11 @@ namespace Gobang
                     break;
             }
 
-            Position p = _droper.think(_chessboard.Data, CurrentPlayer.color, row, col, 5);
+            Position p = _sercher.think(_pawns.Data, CurrentPlayer.color, row, col);
 
-            _chessboard.setData(p.row, p.col, p.color);
+            _pawns.setData(p.row, p.col, p.color);
 
-            state = rule.checkWinner(_chessboard.Data, p.color, p.row, p.col);
+            state = rule.checkWinner(_pawns.Data, p.color, p.row, p.col);
 
             switch (state)
             {
